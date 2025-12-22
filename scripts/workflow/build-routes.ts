@@ -124,7 +124,12 @@ export type RoutePath =
 ${uniquePaths.map((path) => `  | \`${path}\``).join('\n')};
 `;
 
-fs.writeFileSync(path.join(__dirname, '../../assets/build/radar-rules.json'), JSON.stringify(radar, null, 2));
+const buildDir = path.join(__dirname, '../../assets/build');
+if (!fs.existsSync(buildDir)) {
+    fs.mkdirSync(buildDir, { recursive: true });
+}
+
+fs.writeFileSync(path.join(buildDir, 'radar-rules.json'), JSON.stringify(radar, null, 2));
 fs.writeFileSync(path.join(__dirname, '../../assets/build/radar-rules.js'), `(${toSource(radar)})`);
 fs.writeFileSync(path.join(__dirname, '../../assets/build/maintainers.json'), JSON.stringify(maintainers, null, 2));
 fs.writeFileSync(path.join(__dirname, '../../assets/build/routes.json'), JSON.stringify(namespaces, null, 2));
