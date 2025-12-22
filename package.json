@@ -206,7 +206,7 @@
     },
     "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402",
     "engines": {
-        "node": "^22.20.0 || ^24"
+        "node": "20.x"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
@@ -239,7 +239,9 @@
             "rss-parser@3.13.0>xml2js": "^0.6.2",
             "safe-buffer": "npm:@nolyfill/safe-buffer@^1",
             "safer-buffer": "npm:@nolyfill/safer-buffer@^1",
-            "side-channel": "npm:@nolyfill/side-channel@^1"
+            "side-channel": "npm:@nolyfill/side-channel@^1",
+            "bufferutil": "^4.0.9",
+            "utf-8-validate": "^6.0.5"
         },
         "patchedDependencies": {
             "rss-parser@3.13.0": "patches/rss-parser@3.13.0.patch"
