@@ -5,14 +5,15 @@ import { createRoute, z } from '@hono/zod-openapi';
 import { config } from '@/config';
 
 // Schema para resposta do health check (formato HealthKit)
+// Usando z.any() para componentes e metadata porque zod-to-openapi não suporta bem z.record(z.unknown())
 const HealthResponseSchema = z.object({
     id: z.string(),
     group: z.string(),
     status: z.enum(['pass', 'warn', 'fail']),
     version: z.string().optional(),
     timestamp: z.string(),
-    components: z.array(z.unknown()),
-    metadata: z.record(z.unknown()).optional(),
+    components: z.any(),
+    metadata: z.any().optional(),
 });
 
 const route = createRoute({
