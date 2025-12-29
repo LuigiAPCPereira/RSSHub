@@ -149,9 +149,6 @@ const Index: FC<{ debugQuery: string | undefined }> = ({ debugQuery }) => {
                     <div className={healthkit.status.state === 'failed' ? 'text-red-500 text-xs mt-1' : 'text-gray-500 text-xs mt-1'}>{healthkit.status.message}</div>
                 ) : null}
                 {healthkit.status.lastCheck ? <div className="text-gray-400 text-xs mt-1">Last Check: {new Date(healthkit.status.lastCheck).toLocaleTimeString()}</div> : null}
-                <div className="text-gray-400 text-xs mt-1">
-                    Config: URL [{healthkit.configPresent.hasIngestUrl ? 'OK' : 'MISSING'}] | Key [{healthkit.configPresent.hasApiKey ? 'OK' : 'MISSING'}]
-                </div>
             </>
         ),
     });
