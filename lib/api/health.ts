@@ -16,6 +16,11 @@ const HealthResponseSchema = z.object({
     metadata: z.any().optional(),
 });
 
+const ErrorResponseSchema = z.object({
+    error: z.string(),
+    message: z.string(),
+});
+
 const route = createRoute({
     method: 'get',
     path: '/health',
@@ -29,6 +34,14 @@ const route = createRoute({
             },
             description: 'Health check response in HealthKit format',
         },
+        401: {
+            content: {
+                'application/json': {
+                    schema: ErrorResponseSchema,
+                },
+            },
+            description: 'Unauthorized - Missing or invalid API key',
+        },
         503: {
             content: {
                 'application/json': {
@@ -41,6 +54,42 @@ const route = createRoute({
 });
 
 const handler: RouteHandler<typeof route> = async (ctx) => {
+    // Verificar autenticação via HEALTHKIT_API_KEY
+    // Aceita: Authorization: Bearer <key> OU x-api-key: <key>
+    const authHeader = ctx.req.header('Authorization');
+    const xApiKey = ctx.req.header('x-api-key');
+
+    let providedKey: string | undefined;
+
+    if (authHeader?.startsWith('Bearer ')) {
+        providedKey = authHeader.slice(7); // Remove "Bearer "
+    } else if (xApiKey) {
+        providedKey = xApiKey;
+    }
+
+    // Se a API key está configurada, exigir autenticação
+    if (config.healthkit.apiKey) {
+        if (!providedKey) {
+            return ctx.json(
+                {
+                    error: 'Unauthorized',
+                    message: 'Chave de API necessária. Use header Authorization: Bearer <key> ou x-api-key: <key>',
+                },
+                401
+            );
+        }
+
+        if (providedKey !== config.healthkit.apiKey) {
+            return ctx.json(
+                {
+                    error: 'Unauthorized',
+                    message: 'Chave de API inválida.',
+                },
+                401
+            );
+        }
+    }
+
     // Usar SDK em modo Pull conforme documentação do HealthKit
     const healthkit = new HealthKit({
         serviceId: config.healthkit.serviceId || 'rsshub',
