@@ -15,11 +15,20 @@ export function getHealthKitConfig() {
         ingestUrl: config.healthkit.ingestUrl,
         serviceId: config.healthkit.serviceId,
         status: healthkitStatus,
+        configPresent: {
+            hasIngestUrl: !!config.healthkit.ingestUrl,
+            hasApiKey: !!config.healthkit.apiKey,
+        },
     };
 }
 
 export function initHealthKit() {
+    // RAW LOG para garantir visibilidade no Vercel
+    console.log('[HealthKit] Tentando inicializar HealthKit...');
+    console.log(`[HealthKit] Config detectada: URL=${!!config.healthkit.ingestUrl}, APIKey=${!!config.healthkit.apiKey}`);
+
     if (healthkit) {
+        console.log('[HealthKit] Instância já existe. Pulando.');
         return;
     }
 
@@ -31,13 +40,17 @@ export function initHealthKit() {
         if (!config.healthkit.apiKey) {
             missing.push('apiKey');
         }
-        logger.info(`HealthKit disabled: Missing configuration (${missing.join(', ')})`);
-        healthkitStatus = { state: 'disabled', message: `Missing: ${missing.join(', ')}` };
+        const msg = `Missing configuration (${missing.join(', ')})`;
+        console.log(`[HealthKit] DISABLED: ${msg}`);
+        logger.info(`HealthKit disabled: ${msg}`);
+        healthkitStatus = { state: 'disabled', message: msg };
         return;
     }
 
     try {
         healthkitStatus = { state: 'initializing' };
+        console.log('[HealthKit] Inicializando SDK...');
+
         healthkit = new HealthKit({
             serviceId: config.healthkit.serviceId || 'rsshub',
             group: config.healthkit.group || 'production',
@@ -46,22 +59,29 @@ export function initHealthKit() {
             apiKey: config.healthkit.apiKey,
             collectInterval: 60000, // 60 seconds
         });
+
+        console.log('[HealthKit] SDK Inicializado. Enviando heartbeat inicial...');
         logger.info('HealthKit initialized in push mode');
 
         // Immediate verification: Send a heartbeat to confirm connectivity
         healthkit
             .push()
             .then(() => {
+                console.log('[HealthKit] Heartbeat enviado com SUCESSO! 💓');
                 logger.info('HealthKit: Initial heartbeat sent successfully 💓');
                 healthkitStatus = { state: 'connected', lastCheck: new Date().toISOString() };
             })
             .catch((error) => {
-                const msg = `HealthKit: Failed to send initial heartbeat. Check your API Key and Ingest URL. Error: ${error instanceof Error ? error.message : error}`;
-                logger.error(msg);
-                healthkitStatus = { state: 'failed', message: error instanceof Error ? error.message : String(error) };
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                console.error(`[HealthKit] FALHA no heartbeat inicial: ${errorMsg}`);
+                const msg = `Failed to send initial heartbeat. Error: ${errorMsg}`;
+                logger.error(`HealthKit: ${msg}`);
+                healthkitStatus = { state: 'failed', message: msg };
             });
     } catch (error) {
-        logger.error(`HealthKit initialization failed: ${error}`);
-        healthkitStatus = { state: 'failed', message: error instanceof Error ? error.message : String(error) };
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`[HealthKit] ERRO FATAL na inicialização: ${errorMsg}`);
+        logger.error(`HealthKit initialization failed: ${errorMsg}`);
+        healthkitStatus = { state: 'failed', message: errorMsg };
     }
 }
