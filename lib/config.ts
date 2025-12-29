@@ -234,7 +234,11 @@ type ConfigEnvKeys =
     | 'ZSXQ_ACCESS_TOKEN'
     | 'SMZDM_COOKIE'
     | 'REMOTE_CONFIG'
-    | 'REMOTE_CONFIG_AUTH';
+    | 'REMOTE_CONFIG_AUTH'
+    | 'HEALTHKIT_INGEST_URL'
+    | 'HEALTHKIT_API_KEY'
+    | 'HEALTHKIT_SERVICE_ID'
+    | 'HEALTHKIT_GROUP';
 
 export type ConfigEnv = Partial<Record<ConfigEnvKeys, string | undefined>>;
 
@@ -332,6 +336,12 @@ export type Config = {
         description?: string;
         price?: number;
         userLimit?: number;
+    };
+    healthkit: {
+        ingestUrl?: string;
+        apiKey?: string;
+        serviceId?: string;
+        group?: string;
     };
 
     // Route-specific Configurations
@@ -810,6 +820,12 @@ const calculateValue = () => {
             description: envs.FOLLOW_DESCRIPTION,
             price: toInt(envs.FOLLOW_PRICE),
             userLimit: toInt(envs.FOLLOW_USER_LIMIT),
+        },
+        healthkit: {
+            ingestUrl: envs.HEALTHKIT_INGEST_URL,
+            apiKey: envs.HEALTHKIT_API_KEY,
+            serviceId: envs.HEALTHKIT_SERVICE_ID,
+            group: envs.HEALTHKIT_GROUP,
         },
 
         // Route-specific Configurations

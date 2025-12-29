@@ -13,8 +13,8 @@ function transElemText($, prop) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const timezone = _timezone;
     if (regex.test(result)) {
-        // eslint-disable-next-line no-eval
-        result = eval(result);
+        // eslint-disable-next-line no-new-func
+        result = new Function('$', 'parseDate', 'timezone', `return ${result}`)($, parseDate, timezone);
     }
     return result;
 }
