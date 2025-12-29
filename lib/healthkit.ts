@@ -11,7 +11,14 @@ export function initHealthKit() {
     }
 
     if (!config.healthkit.ingestUrl || !config.healthkit.apiKey) {
-        logger.info('HealthKit disabled: Missing ingestUrl or apiKey');
+        const missing = [];
+        if (!config.healthkit.ingestUrl) {
+            missing.push('ingestUrl');
+        }
+        if (!config.healthkit.apiKey) {
+            missing.push('apiKey');
+        }
+        logger.info(`HealthKit disabled: Missing configuration (${missing.join(', ')})`);
         return;
     }
 
@@ -25,6 +32,16 @@ export function initHealthKit() {
             collectInterval: 60000, // 60 seconds
         });
         logger.info('HealthKit initialized in push mode');
+
+        // Immediate verification: Send a heartbeat to confirm connectivity
+        healthkit
+            .push()
+            .then(() => {
+                logger.info('HealthKit: Initial heartbeat sent successfully 💓');
+            })
+            .catch((error) => {
+                logger.error(`HealthKit: Failed to send initial heartbeat. Check your API Key and Ingest URL. Error: ${error instanceof Error ? error.message : error}`);
+            });
     } catch (error) {
         logger.error(`HealthKit initialization failed: ${error}`);
     }
