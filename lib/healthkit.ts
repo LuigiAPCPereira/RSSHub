@@ -32,7 +32,7 @@ export function initHealthKit() {
     }
 
     if (!config.healthkit.ingestUrl || !config.healthkit.apiKey) {
-        const missing = [];
+        const missing: string[] = [];
         if (!config.healthkit.ingestUrl) {
             missing.push('ingestUrl');
         }
