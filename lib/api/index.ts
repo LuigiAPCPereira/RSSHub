@@ -9,11 +9,8 @@ import { handler as namespaceOneHandler, route as namespaceOneRoute } from '@/ap
 import { handler as radarRulesAllHandler, route as radarRulesAllRoute } from '@/api/radar/rules/all';
 import { handler as radarRulesOneHandler, route as radarRulesOneRoute } from '@/api/radar/rules/one';
 
-import { handler as healthHandler, route as healthRoute } from '@/api/health';
-
 const app = new OpenAPIHono();
 
-app.openapi(healthRoute, healthHandler);
 app.openapi(namespaceAllRoute, namespaceAllHandler);
 app.openapi(namespaceOneRoute, namespaceOneHandler);
 app.openapi(radarRulesAllRoute, radarRulesAllHandler);
