@@ -23,12 +23,11 @@ export function getHealthKitConfig() {
 }
 
 export function initHealthKit() {
-    // RAW LOG para garantir visibilidade no Vercel
-    console.log('[HealthKit] Tentando inicializar HealthKit...');
-    console.log(`[HealthKit] Config detectada: URL=${!!config.healthkit.ingestUrl}, APIKey=${!!config.healthkit.apiKey}`);
+    logger.info('[HealthKit] Tentando inicializar HealthKit...');
+    logger.info(`[HealthKit] Config detectada: URL=${!!config.healthkit.ingestUrl}, APIKey=${!!config.healthkit.apiKey}`);
 
     if (healthkit) {
-        console.log('[HealthKit] Instância já existe. Pulando.');
+        logger.info('[HealthKit] Instância já existe. Pulando.');
         return;
     }
 
@@ -41,15 +40,14 @@ export function initHealthKit() {
             missing.push('apiKey');
         }
         const msg = `Missing configuration (${missing.join(', ')})`;
-        console.log(`[HealthKit] DISABLED: ${msg}`);
-        logger.info(`HealthKit disabled: ${msg}`);
+        logger.info(`[HealthKit] DISABLED: ${msg}`);
         healthkitStatus = { state: 'disabled', message: msg };
         return;
     }
 
     try {
         healthkitStatus = { state: 'initializing' };
-        console.log('[HealthKit] Inicializando SDK...');
+        logger.info('[HealthKit] Inicializando SDK...');
 
         healthkit = new HealthKit({
             serviceId: config.healthkit.serviceId || 'rsshub',
@@ -57,31 +55,27 @@ export function initHealthKit() {
             mode: 'push',
             endpoint: config.healthkit.ingestUrl,
             apiKey: config.healthkit.apiKey,
-            collectInterval: 60000, // 60 seconds
+            // NOTA: collectInterval não funciona em Vercel serverless (funções efêmeras).
+            // O Dashboard HealthKit fará pull no endpoint /api/health quando não receber push.
         });
 
-        console.log('[HealthKit] SDK Inicializado. Enviando heartbeat inicial...');
-        logger.info('HealthKit initialized in push mode');
+        logger.info('[HealthKit] SDK Inicializado. Enviando heartbeat inicial...');
 
         // Immediate verification: Send a heartbeat to confirm connectivity
         healthkit
             .push()
             .then(() => {
-                console.log('[HealthKit] Heartbeat enviado com SUCESSO! 💓');
-                logger.info('HealthKit: Initial heartbeat sent successfully 💓');
+                logger.info('[HealthKit] Heartbeat enviado com SUCESSO! 💓');
                 healthkitStatus = { state: 'connected', lastCheck: new Date().toISOString() };
             })
             .catch((error) => {
                 const errorMsg = error instanceof Error ? error.message : String(error);
-                console.error(`[HealthKit] FALHA no heartbeat inicial: ${errorMsg}`);
-                const msg = `Failed to send initial heartbeat. Error: ${errorMsg}`;
-                logger.error(`HealthKit: ${msg}`);
-                healthkitStatus = { state: 'failed', message: msg };
+                logger.error(`[HealthKit] FALHA no heartbeat inicial: ${errorMsg}`);
+                healthkitStatus = { state: 'failed', message: `Failed to send initial heartbeat. Error: ${errorMsg}` };
             });
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        console.error(`[HealthKit] ERRO FATAL na inicialização: ${errorMsg}`);
-        logger.error(`HealthKit initialization failed: ${errorMsg}`);
+        logger.error(`[HealthKit] ERRO FATAL na inicialização: ${errorMsg}`);
         healthkitStatus = { state: 'failed', message: errorMsg };
     }
 }
