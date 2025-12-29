@@ -1,6 +1,7 @@
 import type { FC } from 'hono/jsx';
 
 import { config } from '@/config';
+import { getHealthKitConfig } from '@/healthkit';
 import { getDebugInfo } from '@/utils/debug-info';
 import { gitDate, gitHash } from '@/utils/git-hash';
 import { Layout } from '@/views/layout';
@@ -125,6 +126,32 @@ const Index: FC<{ debugQuery: string | undefined }> = ({ debugQuery }) => {
             },
         ],
     };
+
+    const healthkit = getHealthKitConfig();
+    info.debug.push({
+        name: 'HealthKit',
+        value: (
+            <>
+                <span
+                    className={
+                        healthkit.status.state === 'connected'
+                            ? 'text-green-500 font-bold'
+                            : healthkit.status.state === 'failed'
+                              ? 'text-red-500 font-bold'
+                              : healthkit.status.state === 'disabled'
+                                ? 'text-gray-500 font-bold'
+                                : 'text-yellow-500 font-bold'
+                    }
+                >
+                    {healthkit.status.state.toUpperCase()}
+                </span>
+                {healthkit.status.message ? (
+                    <div className={healthkit.status.state === 'failed' ? 'text-red-500 text-xs mt-1' : 'text-gray-500 text-xs mt-1'}>{healthkit.status.message}</div>
+                ) : null}
+                {healthkit.status.lastCheck ? <div className="text-gray-400 text-xs mt-1">Last Check: {new Date(healthkit.status.lastCheck).toLocaleTimeString()}</div> : null}
+            </>
+        ),
+    });
 
     return (
         <Layout>
