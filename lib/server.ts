@@ -1,7 +1,8 @@
 // This file is for compatibility with Vercel's deployment.
 
-import { initHealthKit } from '@/healthkit';
 import '@/utils/request-rewriter';
+
+import { initHealthKit } from '@/healthkit';
 
 // Initialize HealthKit for Vercel deployment
 initHealthKit();
