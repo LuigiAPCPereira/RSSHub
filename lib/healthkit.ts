@@ -12,10 +12,12 @@ let healthkitStatus: {
 
 export function getHealthKitConfig() {
     return {
+        dashboardUrl: config.healthkit.dashboardUrl,
         ingestUrl: config.healthkit.ingestUrl,
         serviceId: config.healthkit.serviceId,
         status: healthkitStatus,
         configPresent: {
+            hasDashboardUrl: !!config.healthkit.dashboardUrl,
             hasIngestUrl: !!config.healthkit.ingestUrl,
             hasApiKey: !!config.healthkit.apiKey,
         },
@@ -24,22 +26,19 @@ export function getHealthKitConfig() {
 
 export function initHealthKit() {
     logger.info('[HealthKit] Tentando inicializar HealthKit...');
-    logger.info(`[HealthKit] Config detectada: URL=${!!config.healthkit.ingestUrl}, APIKey=${!!config.healthkit.apiKey}`);
+
+    // Determinar qual URL usar: dashboardUrl (novo) ou ingestUrl (legado)
+    const dashboardUrl = config.healthkit.dashboardUrl || config.healthkit.ingestUrl;
+
+    logger.info(`[HealthKit] Config detectada: DashboardURL=${!!dashboardUrl}, APIKey=${!!config.healthkit.apiKey}`);
 
     if (healthkit) {
         logger.info('[HealthKit] Instância já existe. Pulando.');
         return;
     }
 
-    if (!config.healthkit.ingestUrl || !config.healthkit.apiKey) {
-        const missing: string[] = [];
-        if (!config.healthkit.ingestUrl) {
-            missing.push('ingestUrl');
-        }
-        if (!config.healthkit.apiKey) {
-            missing.push('apiKey');
-        }
-        const msg = `Missing configuration (${missing.join(', ')})`;
+    if (!dashboardUrl) {
+        const msg = 'Missing configuration (dashboardUrl or ingestUrl)';
         logger.info(`[HealthKit] DISABLED: ${msg}`);
         healthkitStatus = { state: 'disabled', message: msg };
         return;
@@ -47,31 +46,33 @@ export function initHealthKit() {
 
     try {
         healthkitStatus = { state: 'initializing' };
-        logger.info('[HealthKit] Inicializando SDK...');
+        logger.info('[HealthKit] Inicializando SDK com auto-registration...');
 
+        // Nova API do SDK com auto-registration
         healthkit = new HealthKit({
             serviceId: config.healthkit.serviceId || 'rsshub',
             group: config.healthkit.group || 'production',
-            mode: 'push',
-            endpoint: config.healthkit.ingestUrl,
+            mode: 'pull', // Modo pull com auto-registration
+            dashboardUrl,
             apiKey: config.healthkit.apiKey,
-            // NOTA: collectInterval não funciona em Vercel serverless (funções efêmeras).
-            // O Dashboard HealthKit fará pull no endpoint /api/health quando não receber push.
+            healthEndpointPath: '/api/health', // Path padrão
+            autoRegister: true, // Habilita auto-registration
         });
 
-        logger.info('[HealthKit] SDK Inicializado. Enviando heartbeat inicial...');
+        logger.info('[HealthKit] SDK Inicializado. Fazendo auto-registration no Dashboard...');
 
-        // Immediate verification: Send a heartbeat to confirm connectivity
+        // O SDK agora faz auto-registration no boot
         healthkit
-            .push()
+            .collect()
             .then(() => {
-                logger.info('[HealthKit] Heartbeat enviado com SUCESSO! 💓');
+                logger.info('[HealthKit] Auto-registration concluído com SUCESSO! 💓');
+                logger.info(`[HealthKit] Pull fallback configurado para /api/health`);
                 healthkitStatus = { state: 'connected', lastCheck: new Date().toISOString() };
             })
             .catch((error) => {
                 const errorMsg = error instanceof Error ? error.message : String(error);
-                logger.error(`[HealthKit] FALHA no heartbeat inicial: ${errorMsg}`);
-                healthkitStatus = { state: 'failed', message: `Failed to send initial heartbeat. Error: ${errorMsg}` };
+                logger.error(`[HealthKit] FALHA no auto-registration: ${errorMsg}`);
+                healthkitStatus = { state: 'failed', message: `Failed to auto-register. Error: ${errorMsg}` };
             });
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);

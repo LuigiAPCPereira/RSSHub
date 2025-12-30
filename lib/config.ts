@@ -236,6 +236,7 @@ type ConfigEnvKeys =
     | 'REMOTE_CONFIG'
     | 'REMOTE_CONFIG_AUTH'
     | 'HEALTHKIT_INGEST_URL'
+    | 'HEALTHKIT_DASHBOARD_URL'
     | 'HEALTHKIT_API_KEY'
     | 'HEALTHKIT_SERVICE_ID'
     | 'HEALTHKIT_GROUP';
@@ -339,6 +340,7 @@ export type Config = {
     };
     healthkit: {
         ingestUrl?: string;
+        dashboardUrl?: string;
         apiKey?: string;
         serviceId?: string;
         group?: string;
@@ -823,6 +825,7 @@ const calculateValue = () => {
         },
         healthkit: {
             ingestUrl: envs.HEALTHKIT_INGEST_URL,
+            dashboardUrl: envs.HEALTHKIT_DASHBOARD_URL,
             apiKey: envs.HEALTHKIT_API_KEY,
             serviceId: envs.HEALTHKIT_SERVICE_ID,
             group: envs.HEALTHKIT_GROUP,

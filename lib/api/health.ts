@@ -99,10 +99,15 @@ const handler: RouteHandler<typeof route> = async (ctx) => {
     }
 
     // Usar SDK em modo Pull conforme documentação do HealthKit
+    // Determinar qual URL usar: dashboardUrl (novo) ou ingestUrl (legado)
+    const dashboardUrl = config.healthkit.dashboardUrl || config.healthkit.ingestUrl;
+
     const healthkit = new HealthKit({
         serviceId: config.healthkit.serviceId || 'rsshub',
         group: config.healthkit.group || 'production',
-        mode: 'pull', // Modo Pull para endpoints /health
+        mode: 'pull',
+        dashboardUrl,
+        apiKey: config.healthkit.apiKey,
     });
 
     // O SDK coleta automaticamente:
