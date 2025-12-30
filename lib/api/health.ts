@@ -1,3 +1,5 @@
+import { timingSafeEqual } from 'node:crypto';
+
 import { HealthKit } from '@healthkit/sdk';
 import type { RouteHandler } from '@hono/zod-openapi';
 import { createRoute, z } from '@hono/zod-openapi';
@@ -79,7 +81,13 @@ const handler: RouteHandler<typeof route> = async (ctx) => {
             );
         }
 
-        if (providedKey !== config.healthkit.apiKey) {
+        // Previne timing attacks usando comparação de tempo constante
+        const encoder = new TextEncoder();
+        const apiKey = config.healthkit.apiKey || '';
+        const expectedBuffer = encoder.encode(apiKey);
+        const providedBuffer = encoder.encode(providedKey || '');
+
+        if (expectedBuffer.byteLength !== providedBuffer.byteLength || !timingSafeEqual(expectedBuffer, providedBuffer)) {
             return ctx.json(
                 {
                     error: 'Unauthorized',
