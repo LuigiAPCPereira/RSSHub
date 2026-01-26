@@ -1,8 +1,5 @@
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
-
-const require = createRequire(import.meta.url);
 
 export type DirectoryImportOptions = {
     targetDirectoryPath: string;
@@ -33,22 +30,29 @@ const readDirectory = (targetDirectoryPath: string, includeSubdirectories: boole
     return files;
 };
 
-export const directoryImport = ({ targetDirectoryPath, importPattern = /.*/, includeSubdirectories = true }: DirectoryImportOptions) => {
+export const directoryImport = async ({ targetDirectoryPath, importPattern = /.*/, includeSubdirectories = true }: DirectoryImportOptions) => {
     const modules: Record<string, unknown> = {};
     const filesPaths = readDirectory(targetDirectoryPath, includeSubdirectories);
 
-    for (const filePath of filesPaths) {
-        const { ext: fileExtension } = path.parse(filePath);
-        const isValidModuleExtension = VALID_IMPORT_EXTENSIONS.has(fileExtension);
-        const isDeclarationFile = filePath.endsWith('.d.ts') || filePath.endsWith('.d.tsx');
-        const isValidFilePath = importPattern.test(filePath);
+    const imports = filesPaths
+        .filter((filePath) => {
+            const { ext: fileExtension } = path.parse(filePath);
+            const isValidModuleExtension = VALID_IMPORT_EXTENSIONS.has(fileExtension);
+            const isDeclarationFile = filePath.endsWith('.d.ts') || filePath.endsWith('.d.tsx');
+            const isValidFilePath = importPattern.test(filePath);
+            return isValidModuleExtension && !isDeclarationFile && isValidFilePath;
+        })
+        .map(async (filePath) => {
+            const relativeModulePath = filePath.slice(targetDirectoryPath.length);
+            return {
+                path: relativeModulePath,
+                module: await import(filePath),
+            };
+        });
 
-        if (!isValidModuleExtension || isDeclarationFile || !isValidFilePath) {
-            continue;
-        }
-
-        const relativeModulePath = filePath.slice(targetDirectoryPath.length);
-        modules[relativeModulePath] = require(filePath);
+    const results = await Promise.all(imports);
+    for (const { path, module } of results) {
+        modules[path] = module;
     }
 
     return modules;

@@ -72,10 +72,10 @@ if (config.isPackage) {
             }
             break;
         default:
-            modules = directoryImport({
+            modules = (await directoryImport({
                 targetDirectoryPath: path.join(__dirname, './routes'),
                 importPattern: /\.tsx?$/,
-            }) as typeof modules;
+            })) as typeof modules;
     }
 }
 

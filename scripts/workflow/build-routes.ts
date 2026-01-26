@@ -103,6 +103,7 @@ ${uniquePaths.map((path) => `  | \`${path}\``).join('\n')};
 
 // For Worker build, only output routes-worker.js with filtered namespaces
 // For regular build, output all files
+
 // Ensure build directory exists
 const buildDir = path.join(__dirname, '../../assets/build');
 if (!fs.existsSync(buildDir)) {
