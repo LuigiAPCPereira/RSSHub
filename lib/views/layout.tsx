@@ -45,14 +45,6 @@ export const Layout: FC = (props) => (
                 `}
             </style>
         </head>
-        <body className="antialiased min-h-screen text-zinc-700 flex flex-col">
-            {props.children}
-            <script>
-                {`
-                    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-                `}
-            </script>
-            <script defer src="/_vercel/speed-insights/script.js"></script>
-        </body>
+        <body className="antialiased min-h-screen text-zinc-700 flex flex-col">{props.children}</body>
     </html>
 );

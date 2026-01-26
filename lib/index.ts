@@ -6,7 +6,6 @@ import { serve } from '@hono/node-server';
 
 import app from '@/app';
 import { config } from '@/config';
-import { initHealthKit } from '@/healthkit';
 import { getLocalhostAddress } from '@/utils/common-utils';
 import logger from '@/utils/logger';
 
@@ -23,8 +22,6 @@ if (config.enableCluster) {
                 logger.info(`🔗 Network: 👉 http://${ip}:${port}`);
             }
         }
-
-        initHealthKit();
 
         logger.info(`Primary ${process.pid} is running`);
 
@@ -52,8 +49,6 @@ if (config.enableCluster) {
             logger.info(`🔗 Network: 👉 http://${ip}:${port}`);
         }
     }
-
-    initHealthKit();
 
     server = serve({
         fetch: app.fetch,

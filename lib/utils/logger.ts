@@ -4,7 +4,7 @@ import winston from 'winston';
 
 import { config } from '@/config';
 
-let transports: (typeof winston.transports.File)[] = [];
+let transports: Array<typeof winston.transports.File> = [];
 if (!config.noLogfiles && !process.env.VERCEL) {
     transports = [
         new winston.transports.File({
@@ -33,7 +33,7 @@ const logger = winston.createLogger({
 // If we're not in production then log to the `console` with the format:
 // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
 //
-if (!config.isPackage || process.env.VERCEL) {
+if (!config.isPackage) {
     logger.add(
         new winston.transports.Console({
             format: winston.format.printf((info) => {

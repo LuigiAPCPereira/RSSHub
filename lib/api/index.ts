@@ -4,15 +4,12 @@ import { Scalar } from '@scalar/hono-api-reference';
 
 import { handler as categoryOneHandler, route as categoryOneRoute } from '@/api/category/one';
 import { handler as followConfigHandler, route as followConfigRoute } from '@/api/follow/config';
-import { handler as healthHandler, route as healthRoute } from '@/api/health';
 import { handler as namespaceAllHandler, route as namespaceAllRoute } from '@/api/namespace/all';
 import { handler as namespaceOneHandler, route as namespaceOneRoute } from '@/api/namespace/one';
 import { handler as radarRulesAllHandler, route as radarRulesAllRoute } from '@/api/radar/rules/all';
 import { handler as radarRulesOneHandler, route as radarRulesOneRoute } from '@/api/radar/rules/one';
 
 const app = new OpenAPIHono();
-
-app.openapi(healthRoute, healthHandler);
 
 app.openapi(namespaceAllRoute, namespaceAllHandler);
 app.openapi(namespaceOneRoute, namespaceOneHandler);

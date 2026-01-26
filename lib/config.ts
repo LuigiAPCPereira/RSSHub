@@ -219,6 +219,7 @@ type ConfigEnvKeys =
     | 'XIAOYUZHOU_ID'
     | 'XIAOYUZHOU_TOKEN'
     | 'XIAOHONGSHU_COOKIE'
+    | 'XIAOHONGSHU_PROXY'
     | 'XIMALAYA_TOKEN'
     | 'XSIJISHE_COOKIE'
     | 'XSIJISHE_USER_AGENT'
@@ -234,12 +235,7 @@ type ConfigEnvKeys =
     | 'ZSXQ_ACCESS_TOKEN'
     | 'SMZDM_COOKIE'
     | 'REMOTE_CONFIG'
-    | 'REMOTE_CONFIG_AUTH'
-    | 'HEALTHKIT_INGEST_URL'
-    | 'HEALTHKIT_DASHBOARD_URL'
-    | 'HEALTHKIT_API_KEY'
-    | 'HEALTHKIT_SERVICE_ID'
-    | 'HEALTHKIT_GROUP';
+    | 'REMOTE_CONFIG_AUTH';
 
 export type ConfigEnv = Partial<Record<ConfigEnvKeys, string | undefined>>;
 
@@ -337,13 +333,6 @@ export type Config = {
         description?: string;
         price?: number;
         userLimit?: number;
-    };
-    healthkit: {
-        ingestUrl?: string;
-        dashboardUrl?: string;
-        apiKey?: string;
-        serviceId?: string;
-        group?: string;
     };
 
     // Route-specific Configurations
@@ -649,6 +638,7 @@ export type Config = {
     };
     xiaohongshu: {
         cookie?: string;
+        proxy?: string;
     };
     ximalaya: {
         token?: string;
@@ -822,13 +812,6 @@ const calculateValue = () => {
             description: envs.FOLLOW_DESCRIPTION,
             price: toInt(envs.FOLLOW_PRICE),
             userLimit: toInt(envs.FOLLOW_USER_LIMIT),
-        },
-        healthkit: {
-            ingestUrl: envs.HEALTHKIT_INGEST_URL,
-            dashboardUrl: envs.HEALTHKIT_DASHBOARD_URL,
-            apiKey: envs.HEALTHKIT_API_KEY,
-            serviceId: envs.HEALTHKIT_SERVICE_ID,
-            group: envs.HEALTHKIT_GROUP,
         },
 
         // Route-specific Configurations
@@ -1134,6 +1117,7 @@ const calculateValue = () => {
         },
         xiaohongshu: {
             cookie: envs.XIAOHONGSHU_COOKIE,
+            proxy: envs.XIAOHONGSHU_PROXY,
         },
         ximalaya: {
             token: envs.XIMALAYA_TOKEN,

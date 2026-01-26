@@ -67,7 +67,7 @@ async function handler() {
             cache.tryGet(item.link, async () => {
                 const postEndpoint = `https://sspai.com/api/v1/community/topic/single/info/get?id_hash=${item.id_hash}`;
                 const response = await ofetch(postEndpoint, { headers });
-                item.description = response?.data?.body || 'No content';
+                item.description = response.data.body || 'No content';
                 return item;
             })
         )
