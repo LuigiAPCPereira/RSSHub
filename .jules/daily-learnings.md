@@ -1,3 +1,11 @@
+2025-02-18 - [Worker Route Normalization]
+
+Tema: Bolt
+Persona: Winston
+O que descobrimos: Cloudflare Workers bundle pode exportar rotas como ESM default, objeto `{ handler }` ou função direta.
+Por que importa: O router antigo falhava ao tentar carregar rotas sem normalização (`TypeError: r918.hasOwnProperty is not a function`).
+Como aplicar: Implementar `normalizeHandler` que detecta o formato do export e retorna sempre a função handler correta.
+
 2025-02-18 - [Dynamic Code Execution Safety]
 
 Tema: Sentinel
