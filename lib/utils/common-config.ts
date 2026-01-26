@@ -8,13 +8,12 @@ import _timezone from '@/utils/timezone';
 function transElemText($, prop) {
     const regex = /\$\((.*)\)/g;
     let result = prop;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const parseDate = _parseDate;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const timezone = _timezone;
     if (regex.test(result)) {
-        // eslint-disable-next-line no-eval
-        result = eval(result);
+        // SENTINEL: Substituindo eval por new Function para limitar o escopo de execução.
+        // SECURITY: Apenas variáveis explicitamente passadas são acessíveis, prevenindo vazamento de escopo local.
+        // eslint-disable-next-line no-new-func
+        const func = new Function('$', 'parseDate', 'timezone', `return ${result}`);
+        result = func($, _parseDate, _timezone);
     }
     return result;
 }
