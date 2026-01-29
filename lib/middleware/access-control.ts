@@ -1,11 +1,29 @@
+import crypto from 'node:crypto';
+
 import type { MiddlewareHandler } from 'hono';
 
 import { config } from '@/config';
 import RejectError from '@/errors/types/reject';
 import md5 from '@/utils/md5';
 
-const reject = (requestPath) => {
+const reject = (requestPath: string) => {
     throw new RejectError(`Authentication failed. Access denied.\n${requestPath}`);
+};
+
+/**
+ * SENTINEL: Comparação segura de tempo constante.
+ * Evita ataques de temporização (Timing Attacks) onde o atacante
+ * deduz a chave baseando-se no tempo de resposta.
+ * @param a - Valor esperado (segredo)
+ * @param b - Valor fornecido pelo usuário
+ */
+const safeCompare = (a: string | undefined, b: string | undefined): boolean => {
+    if (!a || !b) {
+        return false;
+    }
+    const bufferA = Buffer.from(a);
+    const bufferB = Buffer.from(b);
+    return bufferA.length === bufferB.length && crypto.timingSafeEqual(bufferA, bufferB);
 };
 
 const middleware: MiddlewareHandler = async (ctx, next) => {
@@ -16,8 +34,13 @@ const middleware: MiddlewareHandler = async (ctx, next) => {
     if (requestPath === '/' || requestPath === '/robots.txt' || requestPath === '/favicon.ico' || requestPath === '/logo.png') {
         await next();
     } else {
-        if (config.accessKey && !(config.accessKey === accessKey || accessCode === md5(requestPath + config.accessKey))) {
-            return reject(requestPath);
+        if (config.accessKey) {
+            const isKeyValid = safeCompare(config.accessKey, accessKey);
+            const isCodeValid = safeCompare(accessCode, md5(requestPath + config.accessKey));
+
+            if (!isKeyValid && !isCodeValid) {
+                return reject(requestPath);
+            }
         }
         await next();
     }

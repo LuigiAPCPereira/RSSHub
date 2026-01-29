@@ -275,3 +275,22 @@ describe('Index view', () => {
         expect(html).not.toContain('Debug Info');
     });
 });
+
+describe('Error view', () => {
+    it('renders error message and accessibility attributes', async () => {
+        const { default: ErrorView } = await import('@/views/error');
+        const html = renderToString(
+            <ErrorView
+                requestPath="/error/path"
+                message="Something went wrong"
+                errorRoute="/error/:id"
+                nodeVersion="v20.0.0"
+            />
+        );
+
+        expect(html).toContain('Something went wrong');
+        expect(html).toContain('/error/path');
+        expect(html).toContain('aria-label="GitHub"');
+        expect(html).toContain('aria-label="Telegram Group"');
+    });
+});

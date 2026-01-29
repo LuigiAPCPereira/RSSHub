@@ -106,17 +106,18 @@ const Index: FC<{
         </div>
         <div className="mt-4 pb-8 text-center w-full text-sm font-medium space-y-2">
             <p className="space-x-4">
-                <a target="_blank" href="https://github.com/DIYgod/RSSHub">
-                    <img className="inline" src="https://icons.ly/github/_/fff" alt="github" width="20" height="20" />
+                {/* PALETTE: Acessibilidade - Adicionando aria-labels para leitores de tela */}
+                <a target="_blank" href="https://github.com/DIYgod/RSSHub" aria-label="GitHub">
+                    <img className="inline" src="https://icons.ly/github/_/fff" alt="" width="20" height="20" />
                 </a>
-                <a target="_blank" href="https://t.me/rsshub">
-                    <img className="inline" src="https://icons.ly/telegram" alt="telegram group" width="20" height="20" />
+                <a target="_blank" href="https://t.me/rsshub" aria-label="Telegram Group">
+                    <img className="inline" src="https://icons.ly/telegram" alt="" width="20" height="20" />
                 </a>
-                <a target="_blank" href="https://t.me/awesomeRSSHub">
-                    <img className="inline" src="https://icons.ly/telegram" alt="telegram channel" width="20" height="20" />
+                <a target="_blank" href="https://t.me/awesomeRSSHub" aria-label="Telegram Channel">
+                    <img className="inline" src="https://icons.ly/telegram" alt="" width="20" height="20" />
                 </a>
-                <a target="_blank" href="https://x.com/intent/follow?screen_name=_RSSHub" className="text-[#F5712C]">
-                    <img className="inline" src="https://icons.ly/x" alt="X" width="20" height="20" />
+                <a target="_blank" href="https://x.com/intent/follow?screen_name=_RSSHub" className="text-[#F5712C]" aria-label="Twitter">
+                    <img className="inline" src="https://icons.ly/x" alt="" width="20" height="20" />
                 </a>
             </p>
             <p className="!mt-6">
