@@ -82,7 +82,9 @@ function renderToSvg(dotContent) {
         });
     } catch (err) {
         process.stderr.write(`Error running dot: ${err.message}\n`);
-        if (err.stderr) process.stderr.write(err.stderr.toString() + '\n');
+        if (err.stderr) {
+            process.stderr.write(err.stderr.toString() + '\n');
+        }
         process.exit(1);
     }
 }
