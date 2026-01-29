@@ -15,10 +15,10 @@ const bypassList = new Set(['/', '/robots.txt', '/logo.png', '/favicon.ico']);
 const waitForRequest = async (controlKey: string) => {
     let retryTimes = process.env.NODE_ENV === 'test' ? 1 : 10;
     while (retryTimes > 0) {
-        // eslint-disable-next-line no-await-in-loop
+        /* eslint-disable no-await-in-loop */
         await new Promise((resolve) => setTimeout(resolve, process.env.NODE_ENV === 'test' ? 3000 : 6000));
-        // eslint-disable-next-line no-await-in-loop
         const isRequesting = await cacheModule.globalCache.get(controlKey);
+        /* eslint-enable no-await-in-loop */
         if (isRequesting !== '1') {
             return;
         }
