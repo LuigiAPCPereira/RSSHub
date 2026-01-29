@@ -81,10 +81,8 @@ function renderToSvg(dotContent) {
             maxBuffer: 10 * 1024 * 1024,
         });
     } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Error running dot:', err.message);
-        // eslint-disable-next-line no-console
-        if (err.stderr) console.error(err.stderr.toString());
+        process.stderr.write(`Error running dot: ${err.message}\n`);
+        if (err.stderr) process.stderr.write(err.stderr.toString() + '\n');
         process.exit(1);
     }
 }
@@ -95,22 +93,14 @@ function main() {
     const skillDirArg = args.find((a) => !a.startsWith('--'));
 
     if (!skillDirArg) {
-        // eslint-disable-next-line no-console
-        console.error('Usage: render-graphs.js <skill-directory> [--combine]');
-        // eslint-disable-next-line no-console
-        console.error('');
-        // eslint-disable-next-line no-console
-        console.error('Options:');
-        // eslint-disable-next-line no-console
-        console.error('  --combine    Combine all diagrams into one SVG');
-        // eslint-disable-next-line no-console
-        console.error('');
-        // eslint-disable-next-line no-console
-        console.error('Example:');
-        // eslint-disable-next-line no-console
-        console.error('  ./render-graphs.js ../subagent-driven-development');
-        // eslint-disable-next-line no-console
-        console.error('  ./render-graphs.js ../subagent-driven-development --combine');
+        process.stderr.write('Usage: render-graphs.js <skill-directory> [--combine]\n');
+        process.stderr.write('\n');
+        process.stderr.write('Options:\n');
+        process.stderr.write('  --combine    Combine all diagrams into one SVG\n');
+        process.stderr.write('\n');
+        process.stderr.write('Example:\n');
+        process.stderr.write('  ./render-graphs.js ../subagent-driven-development\n');
+        process.stderr.write('  ./render-graphs.js ../subagent-driven-development --combine\n');
         process.exit(1);
     }
 
@@ -119,8 +109,7 @@ function main() {
     const skillName = path.basename(skillDir).replace(/-/g, '_');
 
     if (!fs.existsSync(skillFile)) {
-        // eslint-disable-next-line no-console
-        console.error(`Error: ${skillFile} not found`);
+        process.stderr.write(`Error: ${skillFile} not found\n`);
         process.exit(1);
     }
 
@@ -128,12 +117,9 @@ function main() {
     try {
         execSync('which dot', { encoding: 'utf-8' });
     } catch {
-        // eslint-disable-next-line no-console
-        console.error('Error: graphviz (dot) not found. Install with:');
-        // eslint-disable-next-line no-console
-        console.error('  brew install graphviz    # macOS');
-        // eslint-disable-next-line no-console
-        console.error('  apt install graphviz     # Linux');
+        process.stderr.write('Error: graphviz (dot) not found. Install with:\n');
+        process.stderr.write('  brew install graphviz    # macOS\n');
+        process.stderr.write('  apt install graphviz     # Linux\n');
         process.exit(1);
     }
 
@@ -141,13 +127,11 @@ function main() {
     const blocks = extractDotBlocks(markdown);
 
     if (blocks.length === 0) {
-        // eslint-disable-next-line no-console
-        console.log('No ```dot blocks found in', skillFile);
+        process.stdout.write(`No \`\`\`dot blocks found in ${skillFile}\n`);
         process.exit(0);
     }
 
-    // eslint-disable-next-line no-console
-    console.log(`Found ${blocks.length} diagram(s) in ${path.basename(skillDir)}/SKILL.md`);
+    process.stdout.write(`Found ${blocks.length} diagram(s) in ${path.basename(skillDir)}/SKILL.md\n`);
 
     const outputDir = path.join(skillDir, 'diagrams');
     if (!fs.existsSync(outputDir)) {
@@ -163,22 +147,18 @@ function main() {
             if (svg) {
                 const outputPath = path.join(outputDir, `${skillName}_combined.svg`);
                 fs.writeFileSync(outputPath, svg);
-                // eslint-disable-next-line no-console
-                console.log(`  Rendered: ${skillName}_combined.svg`);
+                process.stdout.write(`  Rendered: ${skillName}_combined.svg\n`);
 
                 // Also write the dot source for debugging
                 const dotPath = path.join(outputDir, `${skillName}_combined.dot`);
                 fs.writeFileSync(dotPath, combined);
-                // eslint-disable-next-line no-console
-                console.log(`  Source: ${skillName}_combined.dot`);
+                process.stdout.write(`  Source: ${skillName}_combined.dot\n`);
             } else {
-                // eslint-disable-next-line no-console
-                console.error('  Failed to render combined diagram');
+                process.stderr.write('  Failed to render combined diagram\n');
                 failure = true;
             }
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(`  Error processing combined graph: ${error.message}`);
+            process.stderr.write(`  Error processing combined graph: ${error.message}\n`);
             failure = true;
         }
 
@@ -195,16 +175,13 @@ function main() {
                 if (svg) {
                     const outputPath = path.join(outputDir, `${block.name}.svg`);
                     fs.writeFileSync(outputPath, svg);
-                    // eslint-disable-next-line no-console
-                    console.log(`  Rendered: ${block.name}.svg`);
+                    process.stdout.write(`  Rendered: ${block.name}.svg\n`);
                 } else {
-                    // eslint-disable-next-line no-console
-                    console.error(`  Failed: ${block.name}`);
+                    process.stderr.write(`  Failed: ${block.name}\n`);
                     failure = true;
                 }
             } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error(`  Error processing ${block.name}: ${error.message}`);
+                process.stderr.write(`  Error processing ${block.name}: ${error.message}\n`);
                 failure = true;
             }
         }
@@ -214,8 +191,7 @@ function main() {
         }
     }
 
-    // eslint-disable-next-line no-console
-    console.log(`\nOutput: ${outputDir}/`);
+    process.stdout.write(`\nOutput: ${outputDir}/\n`);
 }
 
 main();
