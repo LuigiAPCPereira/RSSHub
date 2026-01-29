@@ -22,9 +22,14 @@ echo ""
 if command -v fd >/dev/null 2>&1; then
   TEST_FILES=$(fd -t f "$TEST_PATTERN" | sort)
 else
-  # Fallback to finding all test files if pattern is complex, or rely on simple pattern
-  # Assuming standard naming convention if find is used with recursive glob intent
-  TEST_FILES=$(find . -type f -name '*.test.ts' | sort)
+  # Fallback to finding test files using the provided pattern
+  # Attempt to handle path-based patterns by using -wholename (similar to -path but standard in GNU/BSD find)
+  # or -name if it looks like a simple filename pattern.
+  if [[ "$TEST_PATTERN" == *"/"* ]]; then
+    TEST_FILES=$(find . -type f -wholename "$TEST_PATTERN" | sort)
+  else
+    TEST_FILES=$(find . -type f -name "$TEST_PATTERN" | sort)
+  fi
 fi
 
 TOTAL=$(echo "$TEST_FILES" | wc -l | tr -d ' ')

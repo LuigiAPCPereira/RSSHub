@@ -17,18 +17,6 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-/**
- * Extrai blocos DOT de um texto Markdown.
- *
- * Retorna um array com objetos representando cada bloco encontrado; cada objeto contém
- * `name` — um identificador sanitizado do gráfico — e `content` — o conteúdo DOT bruto do bloco.
- * O identificador é derivado do nome declarado no `graph`/`digraph` do conteúdo quando presente;
- * caso contrário é gerado como `graph_<n>`. Caracteres não alfanuméricos (exceto `_`) no nome são
- * substituídos por underscore.
- *
- * @param {string} markdown - Texto Markdown que pode conter blocos de código rotulados como ```dot.
- * @returns {{name: string, content: string}[]} Array de blocos DOT com `name` e `content`.
- */
 function extractDotBlocks(markdown) {
     const blocks = [];
     const regex = /```dot\n([\s\S]*?)```/g;
@@ -49,16 +37,13 @@ function extractDotBlocks(markdown) {
     return blocks;
 }
 
-/**
- * Extrai o corpo (nós e arestas) de um bloco DOT que contém uma declaração `graph` ou `digraph`.
- * @param {string} dotContent - Conteúdo DOT completo que inclui a declaração do grafo e seu corpo entre chaves.
- * @returns {string} O texto dentro das chaves da declaração principal, com diretivas `rankdir` removidas; retorna string vazia se a declaração não for encontrada.
- */
 function extractGraphBody(dotContent) {
     // Extract just the body (nodes and edges) from a digraph
     // Matches "digraph Name {" or "digraph {" or "graph Name {" etc.
     const match = dotContent.match(/(?:strict\s+)?(?:di)?graph(?:\s+\w+)?\s*\{([\s\S]*)\}/);
-    if (!match) return '';
+    if (!match) {
+        return '';
+    }
 
     let body = match[1];
 
@@ -90,13 +75,6 @@ ${bodies.join('\n\n')}
 }`;
 }
 
-/**
- * Gera uma representação SVG a partir de um grafo DOT.
- *
- * Executa o binário `dot` para converter o conteúdo DOT fornecido em SVG; em caso de falha escreve detalhes em stderr e encerra o processo com código 1.
- * @param {string} dotContent - Texto contendo o grafo em formato DOT.
- * @returns {string} O conteúdo SVG gerado pelo Graphviz `dot`.
- */
 function renderToSvg(dotContent) {
     try {
         return execSync('dot -Tsvg', {
@@ -106,21 +84,13 @@ function renderToSvg(dotContent) {
         });
     } catch (err) {
         process.stderr.write(`Error running dot: ${err.message}\n`);
-        if (err.stderr) process.stderr.write(err.stderr.toString() + '\n');
-        process.exit(1);
+        if (err.stderr) {
+            process.stderr.write(err.stderr.toString() + '\n');
+        }
+        return null;
     }
 }
 
-/**
- * Processa argumentos, extrai blocos DOT de SKILL.md e gera SVGs de diagramas.
- *
- * Lê o diretório de skill fornecido na linha de comando, valida a existência de SKILL.md
- * e do binário `dot`, extrai blocos ```dot do arquivo e gera arquivos SVG em
- * <skillDir>/diagrams. Suporta renderizar cada diagrama separadamente ou combinar todos
- * em um único diagrama com a flag `--combine`. Em caso de erro (arquivo ausente,
- * ausência do `dot` ou falhas de renderização) o processo é finalizado com código de
- * saída diferente de zero; se não houver blocos DOT, o processo sai com código 0.
- */
 function main() {
     const args = process.argv.slice(2);
     const combine = args.includes('--combine');
