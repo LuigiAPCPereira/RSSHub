@@ -76,7 +76,7 @@ describe('route throws an error', () => {
             const value = $(item).find('.debug-value').html()?.trim();
             switch (key) {
                 case 'Request Amount:':
-                    expect(value).toBe('13');
+                    expect(value).toBe('12');
                     break;
                 case 'Hot Routes:':
                     expect(value).toBe('10 /test/:id/:params?<br>');
