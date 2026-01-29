@@ -106,16 +106,17 @@ const Index: FC<{
         </div>
         <div className="mt-4 pb-8 text-center w-full text-sm font-medium space-y-2">
             <p className="space-x-4">
-                <a target="_blank" href="https://github.com/DIYgod/RSSHub" aria-label="GitHub">
+                {/* PALETTE: Accessibility - Adding aria-labels for screen readers */}
+                <a target="_blank" href="https://github.com/DIYgod/RSSHub" aria-label="GitHub" rel="noopener noreferrer">
                     <img className="inline" src="https://icons.ly/github/_/fff" alt="" width="20" height="20" />
                 </a>
-                <a target="_blank" href="https://t.me/rsshub" aria-label="Telegram Group">
+                <a target="_blank" href="https://t.me/rsshub" aria-label="Telegram Group" rel="noopener noreferrer">
                     <img className="inline" src="https://icons.ly/telegram" alt="" width="20" height="20" />
                 </a>
-                <a target="_blank" href="https://t.me/awesomeRSSHub" aria-label="Telegram Channel">
+                <a target="_blank" href="https://t.me/awesomeRSSHub" aria-label="Telegram Channel" rel="noopener noreferrer">
                     <img className="inline" src="https://icons.ly/telegram" alt="" width="20" height="20" />
                 </a>
-                <a target="_blank" href="https://x.com/intent/follow?screen_name=_RSSHub" className="text-[#F5712C]" aria-label="Twitter">
+                <a target="_blank" href="https://x.com/intent/follow?screen_name=_RSSHub" className="text-[#F5712C]" aria-label="Twitter" rel="noopener noreferrer">
                     <img className="inline" src="https://icons.ly/x" alt="" width="20" height="20" />
                 </a>
             </p>

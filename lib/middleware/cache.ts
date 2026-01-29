@@ -9,17 +9,21 @@ import cacheModule from '@/utils/cache/index';
 const bypassList = new Set(['/', '/robots.txt', '/logo.png', '/favicon.ico']);
 
 /**
- * Espera por uma requisição em andamento para evitar "cache stampede".
- * Extraído para manter a função principal pequena e focada.
+ * BOLT: Waits for an in-flight request to avoid cache stampede.
+ * MONOZUKURI: Extracted to keep the main function small and focused.
  */
 const waitForRequest = async (controlKey: string) => {
-    let retryTimes = process.env.NODE_ENV === 'test' ? 1 : 10;
+    const waitTime = process.env.NODE_ENV === 'test' ? 1000 : 100;
+    // config.cache.requestTimeout is in seconds, convert to ms
+    const maxRetries = Math.ceil((config.cache.requestTimeout * 1000) / waitTime);
+    let retryTimes = maxRetries;
+
     while (retryTimes > 0) {
-        await new Promise((resolve) => setTimeout(resolve, process.env.NODE_ENV === 'test' ? 3000 : 6000)); // eslint-disable-line no-await-in-loop
         const isRequesting = await cacheModule.globalCache.get(controlKey); // eslint-disable-line no-await-in-loop
         if (isRequesting !== '1') {
             return;
         }
+        await new Promise((resolve) => setTimeout(resolve, waitTime)); // eslint-disable-line no-await-in-loop
         retryTimes--;
     }
     throw new RequestInProgressError('This path is currently fetching, please come back later!');
@@ -31,7 +35,7 @@ const middleware: MiddlewareHandler = async (ctx, next) => {
         return;
     }
 
-    // Otimização do cálculo de hash (executado apenas uma vez)
+    // Optimize hash calculation (execute once)
     const { h64ToString } = await xxhash();
     const requestKey = ctx.req.path + `:${ctx.req.query('format') || 'rss'}` + (ctx.req.query('limit') ? `:${ctx.req.query('limit')}` : '');
     const hash = h64ToString(requestKey);

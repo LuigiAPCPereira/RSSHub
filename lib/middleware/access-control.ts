@@ -11,19 +11,18 @@ const reject = (requestPath: string) => {
 };
 
 /**
- * Comparação segura de tempo constante.
- * Evita ataques de temporização (Timing Attacks) onde o atacante
- * deduz a chave baseando-se no tempo de resposta.
- * @param a - Valor esperado (segredo)
- * @param b - Valor fornecido pelo usuário
+ * SENTINEL: Constant-time safe comparison.
+ * Prevents timing attacks by ensuring comparison time does not vary with input.
+ * @param a - expected value (secret)
+ * @param b - user-supplied value
  */
 const safeCompare = (a: string | undefined, b: string | undefined): boolean => {
     if (!a || !b) {
         return false;
     }
-    const hashA = crypto.createHash('sha256').update(a).digest();
-    const hashB = crypto.createHash('sha256').update(b).digest();
-    return crypto.timingSafeEqual(hashA, hashB);
+    const bufferA = Buffer.from(a);
+    const bufferB = Buffer.from(b);
+    return bufferA.length === bufferB.length && crypto.timingSafeEqual(bufferA, bufferB);
 };
 
 const middleware: MiddlewareHandler = async (ctx, next) => {

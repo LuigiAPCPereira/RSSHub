@@ -214,6 +214,9 @@ for (const namespace in namespaces) {
                         return response;
                     }
                     ctx.set('data', response);
+                } else {
+                    logger.error(`Handler not found for route: ${namespace}/${routeData.location}`);
+                    return ctx.text('Handler not found', 500);
                 }
             }
         };
@@ -257,6 +260,9 @@ for (const namespace in namespaces) {
                 if (typeof routeData.handler === 'function') {
                     const data = await routeData.handler(ctx);
                     ctx.set('apiData', data);
+                } else {
+                    logger.error(`Handler not found for route: ${namespace}/${routeData.location}`);
+                    return ctx.text('Handler not found', 500);
                 }
             }
         };
