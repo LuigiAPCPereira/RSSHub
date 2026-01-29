@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-
+/* eslint-disable no-console */
 /**
  * Render graphviz diagrams from a skill's SKILL.md to SVG files.
  *
@@ -13,9 +12,9 @@
  * Requires: graphviz (dot) installed on system
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 function extractDotBlocks(markdown) {
     const blocks = [];
@@ -38,12 +37,14 @@ function extractDotBlocks(markdown) {
 function extractGraphBody(dotContent) {
     // Extract just the body (nodes and edges) from a digraph
     const match = dotContent.match(/digraph\s+\w+\s*\{([\s\S]*)\}/);
-    if (!match) return '';
+    if (!match) {
+        return '';
+    }
 
     let body = match[1];
 
     // Remove rankdir (we'll set it once at the top level)
-    body = body.replace(/^\s*rankdir\s*=\s*\w+\s*;?\s*$/gm, '');
+    body = body.replaceAll(/^\s*rankdir\s*=\s*\w+\s*;?\s*$/gm, '');
 
     return body.trim();
 }
@@ -77,9 +78,11 @@ function renderToSvg(dotContent) {
             encoding: 'utf-8',
             maxBuffer: 10 * 1024 * 1024,
         });
-    } catch (err) {
-        console.error('Error running dot:', err.message);
-        if (err.stderr) console.error(err.stderr.toString());
+    } catch (error) {
+        console.error('Error running dot:', error.message);
+        if (error.stderr) {
+            console.error(error.stderr.toString());
+        }
         return null;
     }
 }
@@ -103,7 +106,7 @@ function main() {
 
     const skillDir = path.resolve(skillDirArg);
     const skillFile = path.join(skillDir, 'SKILL.md');
-    const skillName = path.basename(skillDir).replace(/-/g, '_');
+    const skillName = path.basename(skillDir).replaceAll('-', '_');
 
     if (!fs.existsSync(skillFile)) {
         console.error(`Error: ${skillFile} not found`);
