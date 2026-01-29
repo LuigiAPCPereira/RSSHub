@@ -19,14 +19,22 @@ echo "Test pattern: $TEST_PATTERN"
 echo ""
 
 # Get list of test files
-TEST_FILES=$(find . -path "$TEST_PATTERN" | sort)
+if command -v fd >/dev/null 2>&1; then
+  TEST_FILES=$(fd -t f "$TEST_PATTERN" | sort)
+else
+  # Fallback to finding all test files if pattern is complex, or rely on simple pattern
+  # Assuming standard naming convention if find is used with recursive glob intent
+  TEST_FILES=$(find . -type f -name '*.test.ts' | sort)
+fi
+
 TOTAL=$(echo "$TEST_FILES" | wc -l | tr -d ' ')
 
 echo "Found $TOTAL test files"
 echo ""
 
 COUNT=0
-for TEST_FILE in $TEST_FILES; do
+while IFS= read -r TEST_FILE; do
+  [ -z "$TEST_FILE" ] && continue
   COUNT=$((COUNT + 1))
 
   # Skip if pollution already exists
@@ -56,7 +64,7 @@ for TEST_FILE in $TEST_FILES; do
     echo "  cat $TEST_FILE         # Review test code"
     exit 1
   fi
-done
+done <<< "$TEST_FILES"
 
 echo ""
 echo "✅ No polluter found - all tests clean!"

@@ -20,17 +20,20 @@ import type { LaceEvent, LaceEventType } from '~/threads/types';
 export function waitForEvent(threadManager: ThreadManager, threadId: string, eventType: LaceEventType, timeoutMs = 5000): Promise<LaceEvent> {
     return new Promise((resolve, reject) => {
         const startTime = Date.now();
+        let timerId: NodeJS.Timeout;
 
         const check = () => {
             const events = threadManager.getEvents(threadId);
             const event = events.find((e) => e.type === eventType);
 
             if (event) {
+                if (timerId) clearTimeout(timerId);
                 resolve(event);
             } else if (Date.now() - startTime > timeoutMs) {
+                if (timerId) clearTimeout(timerId);
                 reject(new Error(`Timeout waiting for ${eventType} event after ${timeoutMs}ms`));
             } else {
-                setTimeout(check, 10); // Poll every 10ms for efficiency
+                timerId = setTimeout(check, 10); // Poll every 10ms for efficiency
             }
         };
 
@@ -61,7 +64,7 @@ export function waitForEventCount(threadManager: ThreadManager, threadId: string
             const matchingEvents = events.filter((e) => e.type === eventType);
 
             if (matchingEvents.length >= count) {
-                resolve(matchingEvents);
+                resolve(matchingEvents.slice(0, count));
             } else if (Date.now() - startTime > timeoutMs) {
                 reject(new Error(`Timeout waiting for ${count} ${eventType} events after ${timeoutMs}ms (got ${matchingEvents.length})`));
             } else {

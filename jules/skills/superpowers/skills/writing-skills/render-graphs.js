@@ -25,9 +25,11 @@ function extractDotBlocks(markdown) {
     while ((match = regex.exec(markdown)) !== null) {
         const content = match[1].trim();
 
-        // Extract digraph name
-        const nameMatch = content.match(/digraph\s+(\w+)/);
-        const name = nameMatch ? nameMatch[1] : `graph_${blocks.length + 1}`;
+        // Extract digraph name or generate fallback
+        const nameMatch = content.match(/(?:strict\s+)?(?:di)?graph\s+(\w+)/);
+        let name = nameMatch ? nameMatch[1] : `graph_${blocks.length + 1}`;
+        // Sanitize name
+        name = name.replace(/[^A-Za-z0-9_]/g, '_');
 
         blocks.push({ name, content });
     }
@@ -37,7 +39,8 @@ function extractDotBlocks(markdown) {
 
 function extractGraphBody(dotContent) {
     // Extract just the body (nodes and edges) from a digraph
-    const match = dotContent.match(/digraph\s+\w+\s*\{([\s\S]*)\}/);
+    // Matches "digraph Name {" or "digraph {" or "graph Name {" etc.
+    const match = dotContent.match(/(?:strict\s+)?(?:di)?graph(?:\s+\w+)?\s*\{([\s\S]*)\}/);
     if (!match) return '';
 
     let body = match[1];
@@ -80,7 +83,7 @@ function renderToSvg(dotContent) {
     } catch (err) {
         console.error('Error running dot:', err.message);
         if (err.stderr) console.error(err.stderr.toString());
-        return null;
+        process.exit(1);
     }
 }
 
@@ -137,32 +140,51 @@ function main() {
 
     if (combine) {
         // Combine all graphs into one
-        const combined = combineGraphs(blocks, skillName);
-        const svg = renderToSvg(combined);
-        if (svg) {
-            const outputPath = path.join(outputDir, `${skillName}_combined.svg`);
-            fs.writeFileSync(outputPath, svg);
-            console.log(`  Rendered: ${skillName}_combined.svg`);
+        let failure = false;
+        try {
+            const combined = combineGraphs(blocks, skillName);
+            const svg = renderToSvg(combined);
+            if (svg) {
+                const outputPath = path.join(outputDir, `${skillName}_combined.svg`);
+                fs.writeFileSync(outputPath, svg);
+                console.log(`  Rendered: ${skillName}_combined.svg`);
 
-            // Also write the dot source for debugging
-            const dotPath = path.join(outputDir, `${skillName}_combined.dot`);
-            fs.writeFileSync(dotPath, combined);
-            console.log(`  Source: ${skillName}_combined.dot`);
-        } else {
-            console.error('  Failed to render combined diagram');
+                // Also write the dot source for debugging
+                const dotPath = path.join(outputDir, `${skillName}_combined.dot`);
+                fs.writeFileSync(dotPath, combined);
+                console.log(`  Source: ${skillName}_combined.dot`);
+            } else {
+                console.error('  Failed to render combined diagram');
+                failure = true;
+            }
+        } catch (e) {
+            console.error(`  Error processing combined graph: ${e.message}`);
+            failure = true;
         }
+
+        if (failure) process.exit(1);
+
     } else {
         // Render each separately
+        let failure = false;
         for (const block of blocks) {
-            const svg = renderToSvg(block.content);
-            if (svg) {
-                const outputPath = path.join(outputDir, `${block.name}.svg`);
-                fs.writeFileSync(outputPath, svg);
-                console.log(`  Rendered: ${block.name}.svg`);
-            } else {
-                console.error(`  Failed: ${block.name}`);
+            try {
+                const svg = renderToSvg(block.content);
+                if (svg) {
+                    const outputPath = path.join(outputDir, `${block.name}.svg`);
+                    fs.writeFileSync(outputPath, svg);
+                    console.log(`  Rendered: ${block.name}.svg`);
+                } else {
+                    console.error(`  Failed: ${block.name}`);
+                    failure = true;
+                }
+            } catch (e) {
+                console.error(`  Error processing ${block.name}: ${e.message}`);
+                failure = true;
             }
         }
+
+        if (failure) process.exit(1);
     }
 
     console.log(`\nOutput: ${outputDir}/`);
