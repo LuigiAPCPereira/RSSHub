@@ -21,9 +21,9 @@ const safeCompare = (a: string | undefined, b: string | undefined): boolean => {
     if (!a || !b) {
         return false;
     }
-    const bufferA = Buffer.from(a);
-    const bufferB = Buffer.from(b);
-    return bufferA.length === bufferB.length && crypto.timingSafeEqual(bufferA, bufferB);
+    const hashA = crypto.createHash('sha256').update(a).digest();
+    const hashB = crypto.createHash('sha256').update(b).digest();
+    return crypto.timingSafeEqual(hashA, hashB);
 };
 
 const middleware: MiddlewareHandler = async (ctx, next) => {
