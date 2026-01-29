@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 /**
  * Render graphviz diagrams from a skill's SKILL.md to SVG files.
@@ -29,7 +30,7 @@ function extractDotBlocks(markdown) {
         const nameMatch = content.match(/(?:strict\s+)?(?:di)?graph\s+(\w+)/);
         let name = nameMatch ? nameMatch[1] : `graph_${blocks.length + 1}`;
         // Sanitize name
-        name = name.replace(/[^A-Za-z0-9_]/g, '_');
+        name = name.replaceAll(/[^A-Za-z0-9_]/g, '_');
 
         blocks.push({ name, content });
     }
@@ -157,12 +158,14 @@ function main() {
                 console.error('  Failed to render combined diagram');
                 failure = true;
             }
-        } catch (e) {
-            console.error(`  Error processing combined graph: ${e.message}`);
+        } catch (error) {
+            console.error(`  Error processing combined graph: ${error.message}`);
             failure = true;
         }
 
-        if (failure) process.exit(1);
+        if (failure) {
+            process.exit(1);
+        }
 
     } else {
         // Render each separately
@@ -178,13 +181,15 @@ function main() {
                     console.error(`  Failed: ${block.name}`);
                     failure = true;
                 }
-            } catch (e) {
-                console.error(`  Error processing ${block.name}: ${e.message}`);
+            } catch (error) {
+                console.error(`  Error processing ${block.name}: ${error.message}`);
                 failure = true;
             }
         }
 
-        if (failure) process.exit(1);
+        if (failure) {
+            process.exit(1);
+        }
     }
 
     console.log(`\nOutput: ${outputDir}/`);

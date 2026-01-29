@@ -27,10 +27,14 @@ export function waitForEvent(threadManager: ThreadManager, threadId: string, eve
             const event = events.find((e) => e.type === eventType);
 
             if (event) {
-                if (timerId) clearTimeout(timerId);
+                if (timerId) {
+                    clearTimeout(timerId);
+                }
                 resolve(event);
             } else if (Date.now() - startTime > timeoutMs) {
-                if (timerId) clearTimeout(timerId);
+                if (timerId) {
+                    clearTimeout(timerId);
+                }
                 reject(new Error(`Timeout waiting for ${eventType} event after ${timeoutMs}ms`));
             } else {
                 timerId = setTimeout(check, 10); // Poll every 10ms for efficiency
