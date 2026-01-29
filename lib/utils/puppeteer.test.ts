@@ -45,8 +45,7 @@ describe('puppeteer', () => {
         browser = null;
     }, 45000);
 
-    // if (!process.env.GITHUB_ACTIONS) {
-    it('puppeteer stealth test', async () => {
+    it.skipIf(!!process.env.GITHUB_ACTIONS)('puppeteer stealth test', async () => {
         const { default: puppeteer } = await import('./puppeteer');
         browser = await puppeteer();
         const page = await browser.newPage();
@@ -57,7 +56,6 @@ describe('puppeteer', () => {
         expect(webDriverTest).toBe('missing (passed)');
         expect(chromeTest).toBe('present (passed)');
     }, 75000);
-    // }
 
     it('puppeteer accept http proxy uri w/ auth', async () => {
         process.env.PROXY_URI = 'http://user:pass@rsshub.proxy:2333';
@@ -169,7 +167,9 @@ describe('getPuppeteerPage', () => {
         process.env.PROXY_URL_REGEX = 'not-exist';
 
         const { getPuppeteerPage } = await import('./puppeteer');
-        const pup = await getPuppeteerPage('https://www.google.com');
+        const pup = await getPuppeteerPage('https://www.google.com', {
+            noGoto: true,
+        });
         browser = pup.browser;
 
         // trailing slash will cause net::ERR_NO_SUPPORTED_PROXIES, prohibit it
@@ -180,7 +180,9 @@ describe('getPuppeteerPage', () => {
         process.env.PROXY_URI = 'https://user:pass@rsshub.proxy:2333';
 
         const { getPuppeteerPage } = await import('./puppeteer');
-        const pup = await getPuppeteerPage('https://www.google.com');
+        const pup = await getPuppeteerPage('https://www.google.com', {
+            noGoto: true,
+        });
         browser = pup.browser;
 
         expect(browser.process()?.spawnargs.some((arg) => arg.includes('--proxy-server'))).toBe(false);
@@ -190,7 +192,9 @@ describe('getPuppeteerPage', () => {
         process.env.PROXY_URI = 'socks5://user:pass@rsshub.proxy:2333';
 
         const { getPuppeteerPage } = await import('./puppeteer');
-        const pup = await getPuppeteerPage('https://www.google.com');
+        const pup = await getPuppeteerPage('https://www.google.com', {
+            noGoto: true,
+        });
         browser = pup.browser;
 
         expect(browser.process()?.spawnargs.some((arg) => arg.includes('--proxy-server'))).toBe(false);
