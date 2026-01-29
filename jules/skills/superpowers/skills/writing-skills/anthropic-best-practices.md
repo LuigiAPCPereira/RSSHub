@@ -254,7 +254,7 @@ As your Skill grows, you can bundle additional content that Claude loads only wh
 
 The complete Skill directory structure might look like this:
 
-```
+```text
 pdf/
 ├── SKILL.md              # Main instructions (loaded when triggered)
 ├── FORMS.md              # Form-filling guide (loaded as needed)
@@ -299,7 +299,7 @@ Claude loads FORMS.md, REFERENCE.md, or EXAMPLES.md only when needed.
 
 For Skills with multiple domains, organize content by domain to avoid loading irrelevant context. When a user asks about sales metrics, Claude only needs to read sales-related schemas, not finance or marketing data. This keeps token usage low and context focused.
 
-```
+```text
 bigquery-skill/
 ├── SKILL.md (overview and navigation)
 └── reference/
@@ -789,13 +789,13 @@ The most effective Skill development process involves Claude itself. Work with o
    Claude models understand the Skill format and structure natively. You don't need special system prompts or a "writing skills" skill to get Claude to help create Skills. Simply ask Claude to create a Skill and it will generate properly structured SKILL.md content with appropriate frontmatter and body content.
  </Tip>
 
-4. **Review for conciseness**: Check that Claude A hasn't added unnecessary explanations. Ask: "Remove the explanation about what win rate means - Claude already knows that."
+1. **Review for conciseness**: Check that Claude A hasn't added unnecessary explanations. Ask: "Remove the explanation about what win rate means - Claude already knows that."
 
-5. **Improve information architecture**: Ask Claude A to organize the content more effectively. For example: "Organize this so the table schema is in a separate reference file. We might add more tables later."
+2. **Improve information architecture**: Ask Claude A to organize the content more effectively. For example: "Organize this so the table schema is in a separate reference file. We might add more tables later."
 
-6. **Test on similar tasks**: Use the Skill with Claude B (a fresh instance with the Skill loaded) on related use cases. Observe whether Claude B finds the right information, applies rules correctly, and handles the task successfully.
+3. **Test on similar tasks**: Use the Skill with Claude B (a fresh instance with the Skill loaded) on related use cases. Observe whether Claude B finds the right information, applies rules correctly, and handles the task successfully.
 
-7. **Iterate based on observation**: If Claude B struggles or misses something, return to Claude A with specifics: "When Claude used this Skill, it forgot to filter by date for Q4. Should we add a section about date filtering patterns?"
+4. **Iterate based on observation**: If Claude B struggles or misses something, return to Claude A with specifics: "When Claude used this Skill, it forgot to filter by date for Q4. Should we add a section about date filtering patterns?"
 
 **Iterating on existing Skills:**
 
@@ -1047,18 +1047,18 @@ Skills run in a code execution environment with filesystem access, bash commands
 - **File paths matter**: Claude navigates your skill directory like a filesystem. Use forward slashes (`reference/guide.md`), not backslashes
 - **Name files descriptively**: Use names that indicate content: `form_validation_rules.md`, not `doc2.md`
 - **Organize for discovery**: Structure directories by domain or feature
-    - Good: `reference/finance.md`, `reference/sales.md`
-    - Bad: `docs/file1.md`, `docs/file2.md`
+  - Good: `reference/finance.md`, `reference/sales.md`
+  - Bad: `docs/file1.md`, `docs/file2.md`
 - **Bundle comprehensive resources**: Include complete API docs, extensive examples, large datasets; no context penalty until accessed
 - **Prefer scripts for deterministic operations**: Write `validate_form.py` rather than asking Claude to generate validation code
 - **Make execution intent clear**:
-    - "Run `analyze_form.py` to extract fields" (execute)
-    - "See `analyze_form.py` for the extraction algorithm" (read as reference)
+  - "Run `analyze_form.py` to extract fields" (execute)
+  - "See `analyze_form.py` for the extraction algorithm" (read as reference)
 - **Test file access patterns**: Verify Claude can navigate your directory structure by testing with real requests
 
 **Example:**
 
-```
+```text
 bigquery-skill/
 ├── SKILL.md (overview, points to reference files)
 └── reference/

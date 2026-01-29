@@ -25,9 +25,11 @@ function extractDotBlocks(markdown) {
     while ((match = regex.exec(markdown)) !== null) {
         const content = match[1].trim();
 
-        // Extract digraph name
-        const nameMatch = content.match(/digraph\s+(\w+)/);
-        const name = nameMatch ? nameMatch[1] : `graph_${blocks.length + 1}`;
+        // Extract digraph name or generate fallback
+        const nameMatch = content.match(/(?:strict\s+)?(?:di)?graph\s+(\w+)/);
+        let name = nameMatch ? nameMatch[1] : `graph_${blocks.length + 1}`;
+        // Sanitize name
+        name = name.replaceAll(/[^A-Za-z0-9_]/g, '_');
 
         blocks.push({ name, content });
     }
@@ -37,8 +39,11 @@ function extractDotBlocks(markdown) {
 
 function extractGraphBody(dotContent) {
     // Extract just the body (nodes and edges) from a digraph
-    const match = dotContent.match(/digraph\s+\w+\s*\{([\s\S]*)\}/);
-    if (!match) return '';
+    // Matches "digraph Name {" or "digraph {" or "graph Name {" etc.
+    const match = dotContent.match(/(?:strict\s+)?(?:di)?graph(?:\s+\w+)?\s*\{([\s\S]*)\}/);
+    if (!match) {
+        return '';
+    }
 
     let body = match[1];
 
@@ -78,8 +83,10 @@ function renderToSvg(dotContent) {
             maxBuffer: 10 * 1024 * 1024,
         });
     } catch (err) {
-        console.error('Error running dot:', err.message);
-        if (err.stderr) console.error(err.stderr.toString());
+        process.stderr.write(`Error running dot: ${err.message}\n`);
+        if (err.stderr) {
+            process.stderr.write(err.stderr.toString() + '\n');
+        }
         return null;
     }
 }
@@ -90,14 +97,14 @@ function main() {
     const skillDirArg = args.find((a) => !a.startsWith('--'));
 
     if (!skillDirArg) {
-        console.error('Usage: render-graphs.js <skill-directory> [--combine]');
-        console.error('');
-        console.error('Options:');
-        console.error('  --combine    Combine all diagrams into one SVG');
-        console.error('');
-        console.error('Example:');
-        console.error('  ./render-graphs.js ../subagent-driven-development');
-        console.error('  ./render-graphs.js ../subagent-driven-development --combine');
+        process.stderr.write('Usage: render-graphs.js <skill-directory> [--combine]\n');
+        process.stderr.write('\n');
+        process.stderr.write('Options:\n');
+        process.stderr.write('  --combine    Combine all diagrams into one SVG\n');
+        process.stderr.write('\n');
+        process.stderr.write('Example:\n');
+        process.stderr.write('  ./render-graphs.js ../subagent-driven-development\n');
+        process.stderr.write('  ./render-graphs.js ../subagent-driven-development --combine\n');
         process.exit(1);
     }
 
@@ -106,7 +113,7 @@ function main() {
     const skillName = path.basename(skillDir).replace(/-/g, '_');
 
     if (!fs.existsSync(skillFile)) {
-        console.error(`Error: ${skillFile} not found`);
+        process.stderr.write(`Error: ${skillFile} not found\n`);
         process.exit(1);
     }
 
@@ -114,9 +121,9 @@ function main() {
     try {
         execSync('which dot', { encoding: 'utf-8' });
     } catch {
-        console.error('Error: graphviz (dot) not found. Install with:');
-        console.error('  brew install graphviz    # macOS');
-        console.error('  apt install graphviz     # Linux');
+        process.stderr.write('Error: graphviz (dot) not found. Install with:\n');
+        process.stderr.write('  brew install graphviz    # macOS\n');
+        process.stderr.write('  apt install graphviz     # Linux\n');
         process.exit(1);
     }
 
@@ -124,11 +131,11 @@ function main() {
     const blocks = extractDotBlocks(markdown);
 
     if (blocks.length === 0) {
-        console.log('No ```dot blocks found in', skillFile);
+        process.stdout.write(`No \`\`\`dot blocks found in ${skillFile}\n`);
         process.exit(0);
     }
 
-    console.log(`Found ${blocks.length} diagram(s) in ${path.basename(skillDir)}/SKILL.md`);
+    process.stdout.write(`Found ${blocks.length} diagram(s) in ${path.basename(skillDir)}/SKILL.md\n`);
 
     const outputDir = path.join(skillDir, 'diagrams');
     if (!fs.existsSync(outputDir)) {
@@ -137,35 +144,58 @@ function main() {
 
     if (combine) {
         // Combine all graphs into one
-        const combined = combineGraphs(blocks, skillName);
-        const svg = renderToSvg(combined);
-        if (svg) {
-            const outputPath = path.join(outputDir, `${skillName}_combined.svg`);
-            fs.writeFileSync(outputPath, svg);
-            console.log(`  Rendered: ${skillName}_combined.svg`);
+        let failure = false;
+        try {
+            const combined = combineGraphs(blocks, skillName);
+            const svg = renderToSvg(combined);
+            if (svg) {
+                const outputPath = path.join(outputDir, `${skillName}_combined.svg`);
+                fs.writeFileSync(outputPath, svg);
+                process.stdout.write(`  Rendered: ${skillName}_combined.svg\n`);
 
-            // Also write the dot source for debugging
-            const dotPath = path.join(outputDir, `${skillName}_combined.dot`);
-            fs.writeFileSync(dotPath, combined);
-            console.log(`  Source: ${skillName}_combined.dot`);
-        } else {
-            console.error('  Failed to render combined diagram');
+                // Also write the dot source for debugging
+                const dotPath = path.join(outputDir, `${skillName}_combined.dot`);
+                fs.writeFileSync(dotPath, combined);
+                process.stdout.write(`  Source: ${skillName}_combined.dot\n`);
+            } else {
+                process.stderr.write('  Failed to render combined diagram\n');
+                failure = true;
+            }
+        } catch (error) {
+            process.stderr.write(`  Error processing combined graph: ${error.message}\n`);
+            failure = true;
         }
+
+        if (failure) {
+            process.exit(1);
+        }
+
     } else {
         // Render each separately
+        let failure = false;
         for (const block of blocks) {
-            const svg = renderToSvg(block.content);
-            if (svg) {
-                const outputPath = path.join(outputDir, `${block.name}.svg`);
-                fs.writeFileSync(outputPath, svg);
-                console.log(`  Rendered: ${block.name}.svg`);
-            } else {
-                console.error(`  Failed: ${block.name}`);
+            try {
+                const svg = renderToSvg(block.content);
+                if (svg) {
+                    const outputPath = path.join(outputDir, `${block.name}.svg`);
+                    fs.writeFileSync(outputPath, svg);
+                    process.stdout.write(`  Rendered: ${block.name}.svg\n`);
+                } else {
+                    process.stderr.write(`  Failed: ${block.name}\n`);
+                    failure = true;
+                }
+            } catch (error) {
+                process.stderr.write(`  Error processing ${block.name}: ${error.message}\n`);
+                failure = true;
             }
+        }
+
+        if (failure) {
+            process.exit(1);
         }
     }
 
-    console.log(`\nOutput: ${outputDir}/`);
+    process.stdout.write(`\nOutput: ${outputDir}/\n`);
 }
 
 main();

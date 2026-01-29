@@ -13,7 +13,7 @@ Code review requires technical evaluation, not emotional performance.
 
 ## The Response Pattern
 
-```
+```text
 WHEN receiving code review feedback:
 
 1. READ: Complete feedback without reacting

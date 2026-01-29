@@ -32,7 +32,7 @@ Thinking "skip TDD just this once"? Stop. That's rationalization.
 
 ## The Iron Law
 
-```
+```text
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
@@ -75,7 +75,6 @@ digraph tdd_cycle {
 
 Write one minimal test showing what should happen.
 
-<Good>
 ```typescript
 test('retries failed operations 3 times', async () => {
   let attempts = 0;
@@ -90,10 +89,9 @@ const result = await retryOperation(operation);
 expect(result).toBe('success');
 expect(attempts).toBe(3);
 });
+```
 
-````
 Clear name, tests real behavior, one thing
-</Good>
 
 <Bad>
 ```typescript
@@ -381,7 +379,7 @@ When adding mocks or test utilities, read @testing-anti-patterns.md to avoid com
 
 ## Final Rule
 
-```
+```text
 Production code → test exists and failed first
 Otherwise → not TDD
 ```

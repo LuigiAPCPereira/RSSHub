@@ -53,7 +53,7 @@ Use Task tool with superpowers:code-reviewer type, fill template at `code-review
 
 ## Example
 
-```
+```text
 [Just completed Task 2: Add verification function]
 
 You: Let me request code review before proceeding.
