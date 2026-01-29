@@ -7,6 +7,119 @@ import { Layout } from '@/views/layout';
 
 const startTime = Date.now();
 
+const getDebugData = (showDebug: boolean, nodeName: string | undefined, cache: any, debug: any, duration: number) => {
+    if (!showDebug) {
+        return [];
+    }
+
+    return [
+        ...(nodeName
+            ? [
+                  {
+                      name: 'Node Name',
+                      value: nodeName,
+                  },
+              ]
+            : []),
+        ...(gitHash
+            ? [
+                  {
+                      name: 'Git Hash',
+                      value: (
+                          <a className="underline" href={`https://github.com/DIYgod/RSSHub/commit/${gitHash}`}>
+                              {gitHash}
+                          </a>
+                      ),
+                  },
+              ]
+            : []),
+        ...(gitDate
+            ? [
+                  {
+                      name: 'Git Date',
+                      value: gitDate.toUTCString(),
+                  },
+              ]
+            : []),
+        {
+            name: 'Cache Duration',
+            value: cache.routeExpire + 's',
+        },
+        {
+            name: 'Request Amount',
+            value: debug.request,
+        },
+        {
+            name: 'Request Frequency',
+            value: ((debug.request / (duration / 1000)) * 60).toFixed(3) + ' times/minute',
+        },
+        {
+            name: 'Cache Hit Ratio',
+            value: debug.request ? ((debug.hitCache / debug.request) * 100).toFixed(2) + '%' : 0,
+        },
+        {
+            name: 'ETag Matched Ratio',
+            value: debug.request ? ((debug.etag / debug.request) * 100).toFixed(2) + '%' : 0,
+        },
+        {
+            name: 'Health',
+            value: debug.request ? ((1 - debug.error / debug.request) * 100).toFixed(2) + '%' : 0,
+        },
+        {
+            name: 'Uptime',
+            value: (duration / 3_600_000).toFixed(2) + ' hour(s)',
+        },
+        {
+            name: 'Hot Routes',
+            value: Object.keys(debug.routes)
+                .toSorted((a, b) => debug.routes[b] - debug.routes[a])
+                .slice(0, 30)
+                .map((route) => (
+                    <>
+                        {debug.routes[route]} {route}
+                        <br />
+                    </>
+                )),
+        },
+        {
+            name: 'Hot Paths',
+            value: Object.keys(debug.paths)
+                .toSorted((a, b) => debug.paths[b] - debug.paths[a])
+                .slice(0, 30)
+                .map((path) => (
+                    <>
+                        {debug.paths[path]} {path}
+                        <br />
+                    </>
+                )),
+        },
+        {
+            name: 'Hot Error Routes',
+            value: Object.keys(debug.errorRoutes)
+                .toSorted((a, b) => debug.errorRoutes[b] - debug.errorRoutes[a])
+                .slice(0, 30)
+                .map((route) => (
+                    <>
+                        {debug.errorRoutes[route]} {route}
+                        <br />
+                    </>
+                )),
+        },
+        {
+            name: 'Hot Error Paths',
+            value: Object.keys(debug.errorPaths)
+                .toSorted((a, b) => debug.errorPaths[b] - debug.errorPaths[a])
+                .slice(0, 30)
+                .map((path) => (
+                    <>
+                        {debug.errorPaths[path]} {path}
+                        <br />
+                    </>
+                )),
+        },
+    ];
+};
+
 const Index: FC<{ debugQuery: string | undefined }> = ({ debugQuery }) => {
     const debug = getDebugInfo();
 
@@ -15,115 +128,14 @@ const Index: FC<{ debugQuery: string | undefined }> = ({ debugQuery }) => {
 
     const duration = Date.now() - startTime;
 
+    // BOLT: Computando debug info APENAS se necessário (Lazy Loading).
+    // KAIZEN: Otimização de performance para reduzir CPU na renderização padrão.
+    const debugData = getDebugData(showDebug, nodeName, cache, debug, duration);
+
     const info = {
         showDebug,
         disallowRobot,
-        debug: [
-            ...(nodeName
-                ? [
-                      {
-                          name: 'Node Name',
-                          value: nodeName,
-                      },
-                  ]
-                : []),
-            ...(gitHash
-                ? [
-                      {
-                          name: 'Git Hash',
-                          value: (
-                              <a className="underline" href={`https://github.com/DIYgod/RSSHub/commit/${gitHash}`}>
-                                  {gitHash}
-                              </a>
-                          ),
-                      },
-                  ]
-                : []),
-            ...(gitDate
-                ? [
-                      {
-                          name: 'Git Date',
-                          value: gitDate.toUTCString(),
-                      },
-                  ]
-                : []),
-            {
-                name: 'Cache Duration',
-                value: cache.routeExpire + 's',
-            },
-            {
-                name: 'Request Amount',
-                value: debug.request,
-            },
-            {
-                name: 'Request Frequency',
-                value: ((debug.request / (duration / 1000)) * 60).toFixed(3) + ' times/minute',
-            },
-            {
-                name: 'Cache Hit Ratio',
-                value: debug.request ? ((debug.hitCache / debug.request) * 100).toFixed(2) + '%' : 0,
-            },
-            {
-                name: 'ETag Matched Ratio',
-                value: debug.request ? ((debug.etag / debug.request) * 100).toFixed(2) + '%' : 0,
-            },
-            {
-                name: 'Health',
-                value: debug.request ? ((1 - debug.error / debug.request) * 100).toFixed(2) + '%' : 0,
-            },
-            {
-                name: 'Uptime',
-                value: (duration / 3_600_000).toFixed(2) + ' hour(s)',
-            },
-            {
-                name: 'Hot Routes',
-                value: Object.keys(debug.routes)
-                    .toSorted((a, b) => debug.routes[b] - debug.routes[a])
-                    .slice(0, 30)
-                    .map((route) => (
-                        <>
-                            {debug.routes[route]} {route}
-                            <br />
-                        </>
-                    )),
-            },
-            {
-                name: 'Hot Paths',
-                value: Object.keys(debug.paths)
-                    .toSorted((a, b) => debug.paths[b] - debug.paths[a])
-                    .slice(0, 30)
-                    .map((path) => (
-                        <>
-                            {debug.paths[path]} {path}
-                            <br />
-                        </>
-                    )),
-            },
-            {
-                name: 'Hot Error Routes',
-                value: Object.keys(debug.errorRoutes)
-                    .toSorted((a, b) => debug.errorRoutes[b] - debug.errorRoutes[a])
-                    .slice(0, 30)
-                    .map((route) => (
-                        <>
-                            {debug.errorRoutes[route]} {route}
-                            <br />
-                        </>
-                    )),
-            },
-            {
-                name: 'Hot Error Paths',
-                value: Object.keys(debug.errorPaths)
-                    .toSorted((a, b) => debug.errorPaths[b] - debug.errorPaths[a])
-                    .slice(0, 30)
-                    .map((path) => (
-                        <>
-                            {debug.errorPaths[path]} {path}
-                            <br />
-                        </>
-                    )),
-            },
-        ],
+        debug: debugData,
     };
 
     return (
@@ -143,11 +155,13 @@ const Index: FC<{ debugQuery: string | undefined }> = ({ debugQuery }) => {
                 <p className="text-xl font-medium text-zinc-600">The world's largest RSS Network.</p>
                 <p className="text-zinc-500">If you see this page, the RSSHub is successfully installed and working.</p>
                 <div className="font-bold space-x-4 text-sm">
-                    <a target="_blank" href="https://docs.rsshub.app">
-                        <button className="text-white bg-[#F5712C] hover:bg-[#DD4A15] py-2 px-4 rounded-full transition-colors">Home</button>
+                    {/* PALETTE: Melhorando acessibilidade e validade HTML (Links como botões, não botões dentro de links) */}
+                    {/* WABI-SABI: Estrutura semântica correta */}
+                    <a target="_blank" href="https://docs.rsshub.app" className="text-white bg-[#F5712C] hover:bg-[#DD4A15] py-2 px-4 rounded-full transition-colors inline-block text-center">
+                        Home
                     </a>
-                    <a target="_blank" href="https://github.com/DIYgod/RSSHub">
-                        <button className="bg-zinc-200 hover:bg-zinc-300 py-2 px-4 rounded-full transition-colors">GitHub</button>
+                    <a target="_blank" href="https://github.com/DIYgod/RSSHub" className="bg-zinc-200 hover:bg-zinc-300 py-2 px-4 rounded-full transition-colors inline-block text-center">
+                        GitHub
                     </a>
                 </div>
                 {info.showDebug ? (
@@ -165,16 +179,17 @@ const Index: FC<{ debugQuery: string | undefined }> = ({ debugQuery }) => {
 
             <div className="text-center pt-4 pb-8 w-full text-sm font-medium space-y-2">
                 <p className="space-x-4">
-                    <a target="_blank" href="https://github.com/DIYgod/RSSHub">
+                    {/* PALETTE: Adicionando aria-labels para leitores de tela */}
+                    <a target="_blank" href="https://github.com/DIYgod/RSSHub" aria-label="GitHub">
                         <img className="inline" src="https://icons.ly/github/_/fff" alt="github" width="20" height="20" />
                     </a>
-                    <a target="_blank" href="https://t.me/rsshub">
+                    <a target="_blank" href="https://t.me/rsshub" aria-label="Telegram Group">
                         <img className="inline" src="https://icons.ly/telegram" alt="telegram group" width="20" height="20" />
                     </a>
-                    <a target="_blank" href="https://t.me/awesomeRSSHub">
+                    <a target="_blank" href="https://t.me/awesomeRSSHub" aria-label="Telegram Channel">
                         <img className="inline" src="https://icons.ly/telegram" alt="telegram channel" width="20" height="20" />
                     </a>
-                    <a target="_blank" href="https://x.com/intent/follow?screen_name=_RSSHub" className="text-[#F5712C]">
+                    <a target="_blank" href="https://x.com/intent/follow?screen_name=_RSSHub" className="text-[#F5712C]" aria-label="X (Twitter)">
                         <img className="inline" src="https://icons.ly/x" alt="X" width="20" height="20" />
                     </a>
                 </p>
