@@ -6,16 +6,14 @@ import type { ThreadManager } from '~/threads/thread-manager';
 import type { LaceEvent, LaceEventType } from '~/threads/types';
 
 /**
- * Wait for a specific event type to appear in thread
+ * Aguarda a ocorrência do primeiro evento de um tipo específico em uma thread.
  *
- * @param threadManager - The thread manager to query
- * @param threadId - Thread to check for events
- * @param eventType - Type of event to wait for
- * @param timeoutMs - Maximum time to wait (default 5000ms)
- * @returns Promise resolving to the first matching event
+ * Rejeita com um Error se o evento não for observado dentro do tempo especificado por `timeoutMs`.
  *
- * Example:
- *   await waitForEvent(threadManager, agentThreadId, 'TOOL_RESULT');
+ * @param threadId - Identificador da thread cujos eventos serão verificados
+ * @param eventType - Tipo de evento a ser aguardado
+ * @param timeoutMs - Tempo máximo em milissegundos para aguardar (padrão: 5000)
+ * @returns O primeiro `LaceEvent` cujo `type` corresponde a `eventType`
  */
 export function waitForEvent(threadManager: ThreadManager, threadId: string, eventType: LaceEventType, timeoutMs = 5000): Promise<LaceEvent> {
     return new Promise((resolve, reject) => {
@@ -46,18 +44,15 @@ export function waitForEvent(threadManager: ThreadManager, threadId: string, eve
 }
 
 /**
- * Wait for a specific number of events of a given type
+ * Aguarda até que um thread receba pelo menos um número especificado de eventos de um tipo dado.
  *
- * @param threadManager - The thread manager to query
- * @param threadId - Thread to check for events
- * @param eventType - Type of event to wait for
- * @param count - Number of events to wait for
- * @param timeoutMs - Maximum time to wait (default 5000ms)
- * @returns Promise resolving to all matching events once count is reached
+ * Rejeita com um `Error` se o número requerido de eventos não for observado dentro de `timeoutMs`.
  *
- * Example:
- *   // Wait for 2 AGENT_MESSAGE events (initial response + continuation)
- *   await waitForEventCount(threadManager, agentThreadId, 'AGENT_MESSAGE', 2);
+ * @param threadId - Identificador do thread a ser monitorado
+ * @param eventType - Tipo de evento a aguardar
+ * @param count - Quantidade mínima de eventos correspondentes necessária para resolver
+ * @param timeoutMs - Tempo máximo de espera em milissegundos (padrão: 5000)
+ * @returns Array contendo os primeiros `count` eventos que correspondem ao `eventType`
  */
 export function waitForEventCount(threadManager: ThreadManager, threadId: string, eventType: LaceEventType, count: number, timeoutMs = 5000): Promise<LaceEvent[]> {
     return new Promise((resolve, reject) => {
