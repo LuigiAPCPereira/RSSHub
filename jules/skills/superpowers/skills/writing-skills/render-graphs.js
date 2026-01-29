@@ -169,7 +169,6 @@ function main() {
         if (failure) {
             process.exit(1);
         }
-
     } else {
         // Render each separately
         let failure = false;

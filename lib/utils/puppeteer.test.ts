@@ -50,13 +50,13 @@ describe('puppeteer', () => {
         const { default: puppeteer } = await import('./puppeteer');
         browser = await puppeteer();
         const page = await browser.newPage();
-        await page.goto('https://bot.sannysoft.com', { waitUntil: 'networkidle0' });
+        await page.goto('https://bot.sannysoft.com', { waitUntil: 'networkidle0', timeout: 60000 });
         // page rendering is not instant, wait for expected elements to appear
         const [webDriverTest, chromeTest] = await Promise.all(['webdriver', 'chrome'].map((t) => page.waitForSelector(`td#${t}-result.result.passed`).then((hd) => hd?.evaluate((e) => e.textContent))));
         // these are something we really care about
         expect(webDriverTest).toBe('missing (passed)');
         expect(chromeTest).toBe('present (passed)');
-    }, 45000);
+    }, 75000);
     // }
 
     it('puppeteer accept http proxy uri w/ auth', async () => {

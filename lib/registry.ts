@@ -197,19 +197,24 @@ for (const namespace in namespaces) {
             logger.debug(`Matched route: ${routePath(ctx)}`);
             if (!ctx.get('data')) {
                 if (typeof routeData.handler !== 'function') {
+                    let module;
                     if (process.env.NODE_ENV === 'test') {
-                        const { route } = await import(`./routes/${namespace}/${routeData.location}`);
-                        routeData.handler = route.handler;
+                        module = await import(`./routes/${namespace}/${routeData.location}`);
                     } else if (routeData.module) {
-                        const { route } = await routeData.module();
-                        routeData.handler = route.handler;
+                        module = await routeData.module();
+                    }
+                    if (module) {
+                        const route = module.route || module.default?.route || module.default || module;
+                        routeData.handler = route?.handler || route;
                     }
                 }
-                const response = await routeData.handler(ctx);
-                if (response instanceof Response) {
-                    return response;
+                if (typeof routeData.handler === 'function') {
+                    const response = await routeData.handler(ctx);
+                    if (response instanceof Response) {
+                        return response;
+                    }
+                    ctx.set('data', response);
                 }
-                ctx.set('data', response);
             }
         };
         subApp.get(path, wrappedHandler);
@@ -238,16 +243,21 @@ for (const namespace in namespaces) {
         const wrappedHandler: Handler = async (ctx) => {
             if (!ctx.get('apiData')) {
                 if (typeof routeData.handler !== 'function') {
+                    let module;
                     if (process.env.NODE_ENV === 'test') {
-                        const { apiRoute } = await import(`./routes/${namespace}/${routeData.location}`);
-                        routeData.handler = apiRoute.handler;
+                        module = await import(`./routes/${namespace}/${routeData.location}`);
                     } else if (routeData.module) {
-                        const { apiRoute } = await routeData.module();
-                        routeData.handler = apiRoute.handler;
+                        module = await routeData.module();
+                    }
+                    if (module) {
+                        const apiRoute = module.apiRoute || module.default?.apiRoute || module.default || module;
+                        routeData.handler = apiRoute?.handler || apiRoute;
                     }
                 }
-                const data = await routeData.handler(ctx);
-                ctx.set('apiData', data);
+                if (typeof routeData.handler === 'function') {
+                    const data = await routeData.handler(ctx);
+                    ctx.set('apiData', data);
+                }
             }
         };
         subApp.get(path, wrappedHandler);

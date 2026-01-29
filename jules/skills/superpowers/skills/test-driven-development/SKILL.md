@@ -77,17 +77,17 @@ Write one minimal test showing what should happen.
 
 ```typescript
 test('retries failed operations 3 times', async () => {
-  let attempts = 0;
-  const operation = () => {
-    attempts++;
-    if (attempts < 3) throw new Error('fail');
-    return 'success';
-  };
+    let attempts = 0;
+    const operation = () => {
+        attempts++;
+        if (attempts < 3) throw new Error('fail');
+        return 'success';
+    };
 
-const result = await retryOperation(operation);
+    const result = await retryOperation(operation);
 
-expect(result).toBe('success');
-expect(attempts).toBe(3);
+    expect(result).toBe('success');
+    expect(attempts).toBe(3);
 });
 ```
 

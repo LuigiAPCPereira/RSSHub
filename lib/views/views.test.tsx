@@ -279,14 +279,7 @@ describe('Index view', () => {
 describe('Error view', () => {
     it('renders error message and accessibility attributes', async () => {
         const { default: ErrorView } = await import('@/views/error');
-        const html = renderToString(
-            <ErrorView
-                requestPath="/error/path"
-                message="Something went wrong"
-                errorRoute="/error/:id"
-                nodeVersion="v20.0.0"
-            />
-        );
+        const html = renderToString(<ErrorView requestPath="/error/path" message="Something went wrong" errorRoute="/error/:id" nodeVersion="v20.0.0" />);
 
         expect(html).toContain('Something went wrong');
         expect(html).toContain('/error/path');

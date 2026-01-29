@@ -207,7 +207,7 @@ Write code before test? Delete it. Start over.
 - Don't look at it
 - Delete means delete
 
-```
+````
 </After>
 
 ### 2. Entry in Rationalization Table
@@ -216,7 +216,7 @@ Write code before test? Delete it. Start over.
 | Excuse | Reality |
 |--------|---------|
 | "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
-```
+````
 
 ### 3. Red Flag Entry
 

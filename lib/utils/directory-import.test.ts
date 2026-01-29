@@ -23,7 +23,7 @@ describe('directory-import', () => {
         }
     });
 
-    it('imports valid files and skips invalid ones', () => {
+    it('imports valid files and skips invalid ones', async () => {
         tempDir = createTempDir();
         const rootModule = path.join(tempDir, 'valid.cjs');
         const jsonModule = path.join(tempDir, 'data.json');
@@ -37,7 +37,7 @@ describe('directory-import', () => {
         writeFile(declaration, 'export {};');
         writeFile(nestedModule, "module.exports = { value: 'child' };");
 
-        const modules = directoryImport({ targetDirectoryPath: tempDir });
+        const modules = await directoryImport({ targetDirectoryPath: tempDir });
         const keyFor = (filePath: string) => filePath.slice(tempDir.length);
 
         expect(modules).toHaveProperty(keyFor(rootModule));
@@ -47,7 +47,7 @@ describe('directory-import', () => {
         expect(modules).not.toHaveProperty(keyFor(declaration));
     });
 
-    it('can skip subdirectories and apply patterns', () => {
+    it('can skip subdirectories and apply patterns', async () => {
         tempDir = createTempDir();
         const rootModule = path.join(tempDir, 'keep.cjs');
         const nestedModule = path.join(tempDir, 'sub', 'skip.cjs');
@@ -55,7 +55,7 @@ describe('directory-import', () => {
         writeFile(rootModule, "module.exports = { value: 'keep' };");
         writeFile(nestedModule, "module.exports = { value: 'skip' };");
 
-        const modules = directoryImport({
+        const modules = await directoryImport({
             targetDirectoryPath: tempDir,
             includeSubdirectories: false,
             importPattern: /keep/,

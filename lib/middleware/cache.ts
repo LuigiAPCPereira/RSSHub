@@ -9,8 +9,8 @@ import cacheModule from '@/utils/cache/index';
 const bypassList = new Set(['/', '/robots.txt', '/logo.png', '/favicon.ico']);
 
 /**
- * BOLT: Espera por uma requisição em andamento para evitar "cache stampede".
- * MONOZUKURI: Extraído para manter a função principal pequena e focada.
+ * Espera por uma requisição em andamento para evitar "cache stampede".
+ * Extraído para manter a função principal pequena e focada.
  */
 const waitForRequest = async (controlKey: string) => {
     let retryTimes = process.env.NODE_ENV === 'test' ? 1 : 10;
@@ -33,7 +33,7 @@ const middleware: MiddlewareHandler = async (ctx, next) => {
         return;
     }
 
-    // BOLT: Otimização do cálculo de hash (executado apenas uma vez)
+    // Otimização do cálculo de hash (executado apenas uma vez)
     const { h64ToString } = await xxhash();
     const requestKey = ctx.req.path + `:${ctx.req.query('format') || 'rss'}` + (ctx.req.query('limit') ? `:${ctx.req.query('limit')}` : '');
     const hash = h64ToString(requestKey);

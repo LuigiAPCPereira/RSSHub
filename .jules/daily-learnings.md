@@ -26,7 +26,7 @@ Como aplicar: Mover lógica pesada para dentro da condicional `if (showDebug)` o
 
 Tema: Sentinel
 Persona: Winston
-O que descobrimos: Comparação de strings com `===` é vulnerável a *timing attacks* em verificações de chaves de API.
+O que descobrimos: Comparação de strings com `===` é vulnerável a _timing attacks_ em verificações de chaves de API.
 Por que importa: Permite que atacantes deduzam a chave medindo o tempo de resposta.
 Como aplicar: Usar `crypto.timingSafeEqual` sempre que comparar segredos.
 

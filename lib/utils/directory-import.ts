@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 export type DirectoryImportOptions = {
     targetDirectoryPath: string;
@@ -46,7 +47,7 @@ export const directoryImport = async ({ targetDirectoryPath, importPattern = /.*
             const relativeModulePath = filePath.slice(targetDirectoryPath.length);
             return {
                 path: relativeModulePath,
-                module: await import(filePath),
+                module: await import(pathToFileURL(filePath).href),
             };
         });
 

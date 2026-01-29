@@ -11,7 +11,7 @@ const reject = (requestPath: string) => {
 };
 
 /**
- * SENTINEL: Comparação segura de tempo constante.
+ * Comparação segura de tempo constante.
  * Evita ataques de temporização (Timing Attacks) onde o atacante
  * deduz a chave baseando-se no tempo de resposta.
  * @param a - Valor esperado (segredo)

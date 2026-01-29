@@ -1047,13 +1047,13 @@ Skills run in a code execution environment with filesystem access, bash commands
 - **File paths matter**: Claude navigates your skill directory like a filesystem. Use forward slashes (`reference/guide.md`), not backslashes
 - **Name files descriptively**: Use names that indicate content: `form_validation_rules.md`, not `doc2.md`
 - **Organize for discovery**: Structure directories by domain or feature
-  - Good: `reference/finance.md`, `reference/sales.md`
-  - Bad: `docs/file1.md`, `docs/file2.md`
+    - Good: `reference/finance.md`, `reference/sales.md`
+    - Bad: `docs/file1.md`, `docs/file2.md`
 - **Bundle comprehensive resources**: Include complete API docs, extensive examples, large datasets; no context penalty until accessed
 - **Prefer scripts for deterministic operations**: Write `validate_form.py` rather than asking Claude to generate validation code
 - **Make execution intent clear**:
-  - "Run `analyze_form.py` to extract fields" (execute)
-  - "See `analyze_form.py` for the extraction algorithm" (read as reference)
+    - "Run `analyze_form.py` to extract fields" (execute)
+    - "See `analyze_form.py` for the extraction algorithm" (read as reference)
 - **Test file access patterns**: Verify Claude can navigate your directory structure by testing with real requests
 
 **Example:**

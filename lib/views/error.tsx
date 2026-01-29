@@ -106,7 +106,6 @@ const Index: FC<{
         </div>
         <div className="mt-4 pb-8 text-center w-full text-sm font-medium space-y-2">
             <p className="space-x-4">
-                {/* PALETTE: Acessibilidade - Adicionando aria-labels para leitores de tela */}
                 <a target="_blank" href="https://github.com/DIYgod/RSSHub" aria-label="GitHub">
                     <img className="inline" src="https://icons.ly/github/_/fff" alt="" width="20" height="20" />
                 </a>
