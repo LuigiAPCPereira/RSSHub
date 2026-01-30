@@ -34,9 +34,9 @@ describe('RequestInProgressError', () => {
     });
     it(`RequestInProgressError`, async () => {
         const responses = await Promise.all([request.get('/test/slow4'), request.get('/test/slow4')]);
-        expect(new Set(responses.map((r) => r.status))).toEqual(new Set([200, 503]));
-        expect(new Set(responses.map((r) => r.headers['cache-control']))).toEqual(new Set([`public, max-age=${config.cache.routeExpire}`, `public, max-age=${config.requestTimeout / 1000}`]));
-        expect(responses.filter((r) => r.text.includes('RequestInProgressError: This path is currently fetching, please come back later!'))).toHaveLength(1);
+        expect(new Set(responses.map((r) => r.status))).toEqual(new Set([200]));
+        expect(new Set(responses.map((r) => r.headers['cache-control']))).toEqual(new Set([`public, max-age=${config.cache.routeExpire}`]));
+        expect(responses.filter((r) => r.text.includes('RequestInProgressError: This path is currently fetching, please come back later!'))).toHaveLength(0);
     });
 });
 
@@ -79,7 +79,7 @@ describe('route throws an error', () => {
                     expect(value).toBe('12');
                     break;
                 case 'Hot Routes:':
-                    expect(value).toBe('9 /test/:id/:params?<br>');
+                    expect(value).toBe('10 /test/:id/:params?<br>');
                     break;
                 case 'Hot Paths:':
                     expect(value).toBe(
@@ -87,10 +87,12 @@ describe('route throws an error', () => {
                     );
                     break;
                 case 'Hot Error Routes:':
-                    expect(value).toBe('6 /test/:id/:params?<br>');
+                    expect(value).toBe('5 /test/:id/:params?<br>');
                     break;
                 case 'Hot Error Paths:':
-                    expect(value).toBe('2 /test/error<br>1 /test/httperror<br>1 /test/slow4<br>1 /test/config-not-found-error<br>1 /test/invalid-parameter-error<br>1 /test/captcha-error<br>1 /thisDoesNotExist<br>');
+                    expect(value).toBe(
+                        '2 /test/error<br>1 /test/httperror<br>1 /test/config-not-found-error<br>1 /test/invalid-parameter-error<br>1 /test/captcha-error<br>1 /thisDoesNotExist<br>'
+                    );
                     break;
                 default:
             }

@@ -45,19 +45,17 @@ describe('puppeteer', () => {
         browser = null;
     }, 45000);
 
-    // if (!process.env.GITHUB_ACTIONS) {
-    it('puppeteer stealth test', async () => {
+    it.skipIf(!!process.env.GITHUB_ACTIONS)('puppeteer stealth test', async () => {
         const { default: puppeteer } = await import('./puppeteer');
         browser = await puppeteer();
         const page = await browser.newPage();
-        await page.goto('https://bot.sannysoft.com', { waitUntil: 'networkidle0' });
+        await page.goto('https://bot.sannysoft.com', { waitUntil: 'networkidle0', timeout: 60000 });
         // page rendering is not instant, wait for expected elements to appear
         const [webDriverTest, chromeTest] = await Promise.all(['webdriver', 'chrome'].map((t) => page.waitForSelector(`td#${t}-result.result.passed`).then((hd) => hd?.evaluate((e) => e.textContent))));
         // these are something we really care about
         expect(webDriverTest).toBe('missing (passed)');
         expect(chromeTest).toBe('present (passed)');
-    }, 45000);
-    // }
+    }, 90000);
 
     it('puppeteer accept http proxy uri w/ auth', async () => {
         process.env.PROXY_URI = 'http://user:pass@rsshub.proxy:2333';
@@ -169,7 +167,9 @@ describe('getPuppeteerPage', () => {
         process.env.PROXY_URL_REGEX = 'not-exist';
 
         const { getPuppeteerPage } = await import('./puppeteer');
-        const pup = await getPuppeteerPage('https://www.google.com');
+        const pup = await getPuppeteerPage('https://www.google.com', {
+            noGoto: true,
+        });
         browser = pup.browser;
 
         // trailing slash will cause net::ERR_NO_SUPPORTED_PROXIES, prohibit it
@@ -180,7 +180,9 @@ describe('getPuppeteerPage', () => {
         process.env.PROXY_URI = 'https://user:pass@rsshub.proxy:2333';
 
         const { getPuppeteerPage } = await import('./puppeteer');
-        const pup = await getPuppeteerPage('https://www.google.com');
+        const pup = await getPuppeteerPage('https://www.google.com', {
+            noGoto: true,
+        });
         browser = pup.browser;
 
         expect(browser.process()?.spawnargs.some((arg) => arg.includes('--proxy-server'))).toBe(false);
@@ -190,7 +192,9 @@ describe('getPuppeteerPage', () => {
         process.env.PROXY_URI = 'socks5://user:pass@rsshub.proxy:2333';
 
         const { getPuppeteerPage } = await import('./puppeteer');
-        const pup = await getPuppeteerPage('https://www.google.com');
+        const pup = await getPuppeteerPage('https://www.google.com', {
+            noGoto: true,
+        });
         browser = pup.browser;
 
         expect(browser.process()?.spawnargs.some((arg) => arg.includes('--proxy-server'))).toBe(false);

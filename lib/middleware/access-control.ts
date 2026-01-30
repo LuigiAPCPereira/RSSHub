@@ -1,11 +1,34 @@
+import crypto from 'node:crypto';
+
 import type { MiddlewareHandler } from 'hono';
 
 import { config } from '@/config';
 import RejectError from '@/errors/types/reject';
 import md5 from '@/utils/md5';
 
-const reject = (requestPath) => {
+const reject = (requestPath: string) => {
     throw new RejectError(`Authentication failed. Access denied.\n${requestPath}`);
+};
+
+/**
+ * SENTINEL: Constant-time safe comparison.
+ * Prevents timing attacks by ensuring comparison time does not vary with input.
+ * @param a - expected value (secret)
+ * @param b - user-supplied value
+ */
+const safeCompare = (a: string | undefined, b: string | undefined): boolean => {
+    if (!a || !b) {
+        return false;
+    }
+    const bufferA = Buffer.from(a);
+    const bufferB = Buffer.from(b);
+    if (bufferA.length === 0 || bufferB.length === 0) {
+        return false;
+    }
+    const maxLength = Math.max(bufferA.length, bufferB.length);
+    const padA = Buffer.concat([bufferA, Buffer.alloc(maxLength - bufferA.length)]);
+    const padB = Buffer.concat([bufferB, Buffer.alloc(maxLength - bufferB.length)]);
+    return crypto.timingSafeEqual(padA, padB) && bufferA.length === bufferB.length;
 };
 
 const middleware: MiddlewareHandler = async (ctx, next) => {
@@ -16,8 +39,13 @@ const middleware: MiddlewareHandler = async (ctx, next) => {
     if (requestPath === '/' || requestPath === '/robots.txt' || requestPath === '/favicon.ico' || requestPath === '/logo.png') {
         await next();
     } else {
-        if (config.accessKey && !(config.accessKey === accessKey || accessCode === md5(requestPath + config.accessKey))) {
-            return reject(requestPath);
+        if (config.accessKey) {
+            const isKeyValid = safeCompare(config.accessKey, accessKey);
+            const isCodeValid = safeCompare(accessCode, md5(requestPath + config.accessKey));
+
+            if (!isKeyValid && !isCodeValid) {
+                return reject(requestPath);
+            }
         }
         await next();
     }
