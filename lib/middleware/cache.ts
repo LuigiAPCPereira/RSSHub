@@ -13,7 +13,7 @@ const bypassList = new Set(['/', '/robots.txt', '/logo.png', '/favicon.ico']);
  * MONOZUKURI: Extracted to keep the main function small and focused.
  */
 const waitForRequest = async (controlKey: string) => {
-    const waitTime = process.env.NODE_ENV === 'test' ? 1000 : 100;
+    const waitTime = process.env.NODE_ENV === 'test' ? 1000 : 500;
     // config.cache.requestTimeout is in seconds, convert to ms
     const maxRetries = Math.ceil((config.cache.requestTimeout * 1000) / waitTime);
     let retryTimes = maxRetries;

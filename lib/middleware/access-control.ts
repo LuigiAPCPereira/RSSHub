@@ -22,7 +22,13 @@ const safeCompare = (a: string | undefined, b: string | undefined): boolean => {
     }
     const bufferA = Buffer.from(a);
     const bufferB = Buffer.from(b);
-    return bufferA.length === bufferB.length && crypto.timingSafeEqual(bufferA, bufferB);
+    if (bufferA.length === 0 || bufferB.length === 0) {
+        return false;
+    }
+    const maxLength = Math.max(bufferA.length, bufferB.length);
+    const padA = Buffer.concat([bufferA, Buffer.alloc(maxLength - bufferA.length)]);
+    const padB = Buffer.concat([bufferB, Buffer.alloc(maxLength - bufferB.length)]);
+    return crypto.timingSafeEqual(padA, padB) && bufferA.length === bufferB.length;
 };
 
 const middleware: MiddlewareHandler = async (ctx, next) => {
